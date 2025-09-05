@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YCloud Dashboard</title>
+  <link rel="icon" type="image/png" href="/static/YCloud.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ----------------------------------------
+       Premium CSS Starter Kit - YCloud Edition
+       ---------------------------------------- */
+
+    :root {
+      /* Color system */
+      --bg: #0b0f17;             /* base background */
+      --panel: rgba(255,255,255,0.06); /* glass surface */
+      --panel-strong: rgba(255,255,255,0.12);
+      --text: #eaf0f8;           /* primary text */
+      --muted: #b9c4d4;          /* secondary text */
+      --brand: #7cf0ff;          /* accent */
+      --brand-2: #9a8cff;        /* accent 2 */
+      --error: #ff6b6b;          /* error */
+      --ok: #3ddc97;             /* success */
+      --warn: #ffd166;           /* warning */
+
+      /* Radii & shadow */
+      --radius: 16px;
+      --radius-lg: 20px;
+      --shadow-soft: 0 10px 30px rgba(0,0,0,.25);
+      --shadow-hard: 0 20px 60px rgba(0,0,0,.35);
+      --ring: 0 0 0 3px color-mix(in srgb, var(--brand) 30%, transparent);
+
+      /* Blur */
+      --blur: 14px;
+
+      /* Typography */
+      --font-sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-alt: "Plus Jakarta Sans", var(--font-sans);
+      --fs-xxl: clamp(2.2rem, 1.4rem + 2.5vw, 3.3rem);
+      --fs-xl: clamp(1.6rem, 1.25rem + 1.2vw, 2.2rem);
+      --fs-lg: 1.25rem;
+      --fs-md: 1rem;
+      --fs-sm: .9rem;
+
+      /* Spacing scale */
+      --sp-1: .5rem;
+      --sp-2: .75rem;
+      --sp-3: 1rem;
+      --sp-4: 1.5rem;
+      --sp-5: 2rem;
+      --sp-6: 3rem;
+
+      /* Transitions */
+      --t-fast: 160ms ease;
+      --t-normal: 260ms cubic-bezier(.2,.8,.2,1);
+      --t-slow: 500ms cubic-bezier(.2,.8,.2,1);
+    }
+
+    /* Base */
+    html, body {
+      height: 100%;
+      background:
+        radial-gradient(80% 60% at 10% 10%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 60%),
+        radial-gradient(60% 40% at 90% 20%, color-mix(in srgb, var(--brand-2) 14%, transparent), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: min(1200px, 92vw);
+      margin: 0 auto;
+      padding: var(--sp-4) 0;
+    }
+
+    h1, h2, h3, h4, h5 { 
+      font-family: var(--font-alt);
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 var(--sp-2) 0;
+    }
+    
+    h1 { font-size: var(--fs-xxl); letter-spacing: -.02em; }
+    h2 { font-size: var(--fs-xl); letter-spacing: -.01em; }
+    h3 { font-size: var(--fs-lg); }
+    h4 { font-size: var(--fs-md); }
+    h5 { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    p.lead { font-size: var(--fs-lg); color: var(--muted); max-width: 60ch; }
+
+    /* Card (glass) */
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow-soft);
+      padding: var(--sp-4);
+      transition: transform var(--t-normal), box-shadow var(--t-normal);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hard);
+    }
+
+    /* Buttons */
+    .btn {
+      --_bg: linear-gradient(180deg, color-mix(in srgb, var(--brand) 70%, white 0%), color-mix(in srgb, var(--brand) 40%, black 8%));
+      --_fg: #021018;
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center;
+      gap: .6rem;
+      border: none; 
+      cursor: pointer; 
+      user-select: none;
+      padding: .75rem 1.1rem; 
+      border-radius: var(--radius);
+      font-weight: 600; 
+      letter-spacing: .01em;
+      background: var(--_bg); 
+      color: var(--_fg);
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--brand) 30%, transparent), inset 0 0 0 1px rgba(255,255,255,.45);
+      transition: transform var(--t-fast), box-shadow var(--t-normal), filter var(--t-fast);
+      font-size: var(--fs-sm);
+      text-decoration: none;
+    }
+    
+    .btn:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 16px 30px color-mix(in srgb, var(--brand) 38%, transparent), inset 0 0 0 1px rgba(255,255,255,.6); 
+    }
+    
+    .btn:active { 
+      transform: translateY(0); 
+      filter: saturate(.9); 
+    }
+    
+    .btn.ghost { 
+      background: transparent; 
+      color: var(--text); 
+      border: 1px solid rgba(255,255,255,.24); 
+      box-shadow: var(--shadow-soft); 
+    }
+    
+    .btn.secondary { 
+      --_bg: linear-gradient(180deg, color-mix(in srgb, var(--brand-2) 75%, white 0%), color-mix(in srgb, var(--brand-2) 40%, black 8%)); 
+    }
+    
+    .btn.full {
+      width: 100%;
+    }
+
+    /* Inputs */
+    .input {
+      width: 100%;
+      padding: .9rem 1rem;
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--panel) 60%, transparent);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid rgba(255,255,255,.18);
+      color: var(--text);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+      transition: box-shadow var(--t-fast), border-color var(--t-fast);
+      font-family: var(--font-sans);
+      font-size: var(--fs-sm);
+      margin-bottom: var(--sp-2);
+    }
+    
+    .input:focus { 
+      box-shadow: var(--ring), inset 0 1px 0 rgba(255,255,255,.12); 
+      border-color: color-mix(in srgb, var(--brand) 35%, white 0%); 
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky; 
+      top: 0; 
+      z-index: 20;
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      background: linear-gradient(180deg, rgba(0,0,0,.35), transparent);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      margin-bottom: var(--sp-4);
+    }
+    
+    .nav-inner { 
+      display:flex; 
+      align-items:center; 
+      justify-content:space-between; 
+      gap:1rem; 
+      padding: .9rem 0; 
+    }
+    
+    .brand { 
+      display:flex; 
+      align-items:center; 
+      gap:.7rem; 
+      font-weight:800; 
+      letter-spacing:.02em; 
+      font-family: var(--font-alt);
+    }
+    
+    .brand .logo {
+      height: 40px;
+      width: auto;
+    }
+    
+    .nav-actions { 
+      display:flex; 
+      gap:.6rem; 
+    }
+
+    /* Grid */
+    .grid { 
+      display:grid; 
+      gap: var(--sp-4); 
+    }
+    
+    .grid-2 { 
+      grid-template-columns: 1fr 2fr; 
+    }
+    
+    @media (max-width: 900px){ 
+      .grid-2 { 
+        grid-template-columns: 1fr; 
+      } 
+    }
+
+    /* Badges / Pills */
+    .pill { 
+      display:inline-flex; 
+      align-items:center; 
+      gap:.5rem;
+      padding:.4rem .7rem; 
+      border-radius:999px; 
+      background: color-mix(in srgb, var(--brand) 18%, transparent); 
+      color: var(--text); 
+      border:1px solid rgba(255,255,255,.2); 
+      font-weight:600; 
+      font-size:.85rem; 
+      margin-bottom: var(--sp-2);
+    }
+
+    /* Divider */
+    .hr { 
+      height:1px; 
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent); 
+      border:none; 
+      margin: var(--sp-3) 0; 
+    }
+
+    /* Status messages */
+    .status {
+      padding: var(--sp-2);
+      border-radius: var(--radius);
+      margin-top: var(--sp-2);
+      font-size: var(--fs-sm);
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
+    }
+
+    /* QR Box */
+    .qr-box {
+      display: flex;
+      gap: var(--sp-3);
+      align-items: center;
+      margin-top: var(--sp-3);
+      padding: var(--sp-3);
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .qr-container {
+      width: 80px;
+      height: 80px;
+      background: white;
+      padding: 5px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: var(--sp-4);
+      background: var(--panel);
+      padding: 5px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border-radius: calc(var(--radius) - 4px);
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--t-normal);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #021018;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Cards Grid */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--sp-3);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+      padding: var(--sp-3);
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(var(--blur));
+      padding: var(--sp-4);
+      box-shadow: var(--shadow-hard);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--sp-3);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    /* Utilities */
+    .hidden {
+      display: none !important;
+    }
+
+    .mt-1 { margin-top: var(--sp-1); } 
+    .mt-2 { margin-top: var(--sp-2);} 
+    .mt-3 { margin-top: var(--sp-3);} 
+    .mt-4 { margin-top: var(--sp-4);} 
+    
+    .mb-1 { margin-bottom: var(--sp-1); } 
+    .mb-2 { margin-bottom: var(--sp-2);} 
+    .mb-3 { margin-bottom: var(--sp-3);} 
+    
+    .flex { display: flex; }
+    .gap-2 { gap: var(--sp-2); } 
+    .gap-3 { gap: var(--sp-3); } 
+    
+    .muted {
+      color: var(--muted);
+    }
+
+    /* Animations */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp var(--t-slow) forwards;
+    }
+    
+    .fade-up.del-1 { animation-delay: .12s; }
+    .fade-up.del-2 { animation-delay: .2s; }
+    .fade-up.del-3 { animation-delay: .28s; }
+    
+    @keyframes fadeUp { 
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      } 
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .qr-box {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="container nav-inner">
+      <div class="brand">
+        <img class="logo" src="https://res.cloudinary.com/dorzbi528/image/upload/v1754333694/YCloud-removebg-preview_cnkmc1.png" alt="YCloud">
+        <span>YCloud</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn ghost" onclick="shuffleAccent()" title="Change theme color">Change Color</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <header class="fade-up">
+      <h1>YCloud Dashboard</h1>
+      <p class="lead muted">AI & Tools — smart, private, and fast</p>
+    </header>
+
+    <div class="grid grid-2 mt-4">
+      <!-- LEFT: Upload / Send / Receive -->
+      <aside class="card fade-up del-1">
+        <h4>Send / Receive</h4>
+        <p class="muted mb-2">Enter Your Name</p>
+        <input class="input" id="username" type="text" placeholder="Your name (for share)">
+
+        <hr class="hr">
+
+        <h5 class="muted">Send (Upload)</h5>
+        <input class="input" id="fileInput" type="file" />
+        <button class="btn full" onclick="uploadFile()">Upload & Generate Code</button>
+        <div id="uploadStatus" class="status hidden">...</div>
+
+        <div class="qr-box hidden" id="shareBox">
+          <div class="qr-container" id="qrCode"></div>
+          
+          <div>
+            <div class="muted">Share Code</div>
+            <div id="shareCode" class="mt-1" style="font-weight:700; font-size:18px;"></div>
+            <div class="flex gap-2 mt-2">
+              <button class="btn ghost" onclick="copyCode()">Copy Code</button>
+              <button class="btn ghost" onclick="shareLink()">Share Link</button>
+            </div>
+          </div>
+        </div>
+
+        <hr class="hr">
+
+        <h5 class="muted">Receive (Download)</h5>
+        <input class="input" id="fileCode" type="text" placeholder="Enter code (6-chars)">
+        <button class="btn secondary full" onclick="downloadFile()">Download</button>
+        <div id="downloadStatus" class="status hidden">Waiting</div>
+      </aside>
+
+      <!-- RIGHT: Tabs + Cards -->
+      <main class="fade-up del-2">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="ai">AI Tools</button>
+          <button class="tab-btn" data-tab="image">Image Tools</button>
+          <button class="tab-btn" data-tab="doc">Document Tools</button>
+        </div>
+
+        <!-- AI Tab -->
+        <section id="tab-ai" class="tab-panel active">
+          <div class="cards">
+            <div class="card">
+              <div class="pill">Smart Notes</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">🎤</div>
+                <div>
+                  <h4>Voice → Document</h4>
+                  <p class="muted">Transcribe audio, create summary and Export in DOCX/PDF.</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="go('/ai/voice_to_doc')">Open</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="pill">Study Buddy</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">⚡</div>
+                <div>
+                  <h4>YCloud Spark</h4>
+                  <p class="muted">Upload documents → get summary and answers to questions & Quiz's</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="go('/YcloudSpark')">Open</button>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="pill">Career AI</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">📄</div>
+                <div>
+                  <h4>YCloud Resume Builder</h4>
+                  <p class="muted">Build ATS-ready resumes</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="go('/ai/resume')">Open</button>
+              </div>
+            </div>
+          </div>
+		  <div class="card">
+              <div class="pill">Mindmap</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">📄</div>
+                <div>
+                  <h4>YCloud Mindmap</h4>
+                  <p class="muted">Convert your pdf's into suitable mindmap</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="go('/ai/mindmap')">Open</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Image Tab -->
+        <section id="tab-image" class="tab-panel">
+          <div class="cards">
+            <div class="card">
+              <div class="pill">Image Tools</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">🖼️</div>
+                <div>
+                  <h4>Image Resizer</h4>
+                  <p class="muted">Resize large images for faster sharing</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="openImageResizer()">Open</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="pill">OCR</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">🔎</div>
+                <div>
+                  <h4>Image OCR</h4>
+                  <p class="muted">Extract text from images</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="openOCRModal()">Open</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DOC Tab -->
+        <section id="tab-doc" class="tab-panel">
+          <div class="cards">
+            <div class="card">
+              <div class="pill">Doc Tools</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">📄</div>
+                <div>
+                  <h4>PDF → Word</h4>
+                  <p class="muted">Convert PDFs to editable .docx files.</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="openDocToolModal('pdf-to-word')">Open</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="pill">Doc Tools</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">🗂️</div>
+                <div>
+                  <h4>Merge PDFs</h4>
+                  <p class="muted">Merge multiple PDF files into one combined PDF.</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="openDocToolModal('merge-pdfs')">Open</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="pill">Doc Tools</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">📄</div>
+                <div>
+                  <h4>Word → PDF</h4>
+                  <p class="muted">Convert Word Files to PDF files.</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="openDocToolModal('word-to-pdf')">Open</button>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="pill">Doc Tools</div>
+              <div class="flex gap-3">
+                <div style="font-size:24px;">🖼️</div>
+                <div>
+                  <h4>PDF → Images</h4>
+                  <p class="muted">Convert PDF pages into individual image files.</p>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button class="btn" onclick="openDocToolModal('pdf-to-images')">Open</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  
+  <!-- Image Resizer Modal -->
+  <div id="resizeModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Resize Image</h3>
+        <button class="modal-close" onclick="closeImageResizer()">&times;</button>
+      </div>
+      <input class="input" id="resizeImageInput" type="file" accept="image/*">
+      <input class="input" id="resizeWidth" type="text" placeholder="Width (px)">
+      <input class="input" id="resizeHeight" type="text" placeholder="Height (px)">
+      <button class="btn full" onclick="resizeImage()">Resize</button>
+      <div id="resizeResult" class="status hidden mt-3"></div>
+    </div>
+  </div>
+
+  <!-- Image OCR Modal -->
+  <div id="ocrModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Image OCR</h3>
+      <button class="modal-close" onclick="closeOCRModal()">&times;</button>
+    </div>
+
+    <input class="input" id="ocrImageInput" type="file" accept="image/*">
+    <button class="btn full" onclick="performOCR()">Extract Text</button>
+
+    <div id="ocrProgress" class="status hidden mt-3">Processing...</div>
+    <div id="ocrResult" class="status hidden mt-3">
+      <pre id="extractedText"></pre>
+    </div>
+  </div>
+</div>
+
+  <!-- Document Tools Modal -->
+  <div id="docToolModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="docToolTitle">Document Tool</h3>
+        <button class="modal-close" onclick="closeModal('docToolModal')">&times;</button>
+      </div>
+      <div>
+        <div id="docToolContent">
+          <!-- Content will be dynamically inserted based on the tool -->
+        </div>
+        <div id="docToolProgress" class="status hidden mt-3"></div>
+        <div id="docToolResult" class="status hidden mt-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------- Global Variables ----------------
+    const backendUrl = "https://yconnect.duckdns.org";
+    let generatedCode = "";
+    let currentDocTool = "";
+
+    // ---------------- Tab Switching ----------------
+    document.querySelectorAll('.tab-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        // Show corresponding tab panel
+        const tabId = `tab-${e.target.dataset.tab}`;
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // ---------------- Modal Functions ----------------
+    function openImageResizer() {
+      document.getElementById('resizeModal').classList.remove('hidden');
+    }
+
+    function closeImageResizer() {
+      document.getElementById('resizeModal').classList.add('hidden');
+    }
+
+    function openOCRModal() {
+      document.getElementById('ocrModal').classList.remove('hidden');
+    }
+
+    function closeOCRModal() {
+      document.getElementById('ocrModal').classList.add('hidden');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // ---------------- Document Tools Modal ----------------
+    function openDocToolModal(tool) {
+      currentDocTool = tool;
+
+      const modal = document.getElementById('docToolModal');
+      const title = document.getElementById('docToolTitle');
+      const content = document.getElementById('docToolContent');
+      const progress = document.getElementById('docToolProgress');
+      const result = document.getElementById('docToolResult');
+
+      // Reset modal state
+      progress.classList.add('hidden');
+      result.classList.add('hidden');
+
+      // Set modal content based on selected tool
+      switch (tool) {
+        case 'pdf-to-word':
+          title.textContent = 'PDF to Word Converter';
+          content.innerHTML = `
+            <p class="muted">Convert a PDF file to an editable Word document.</p>
+            <div class="mt-3">
+              <label class="muted">Select PDF file:</label>
+              <input class="input" type="file" id="pdfToWordInput" accept=".pdf" />
+            </div>
+            <button class="btn full mt-3" onclick="convertPdfToWord()">Convert to Word</button>
+          `;
+          break;
+          
+        case 'merge-pdfs':
+          title.textContent = 'Merge PDF Files';
+          content.innerHTML = `
+            <p class="muted">Select multiple PDF files to merge into a single PDF.</p>
+            <div class="mt-3">
+              <label class="muted">Select PDF files (multiple):</label>
+              <input class="input" type="file" id="mergePdfsInput" accept=".pdf" multiple />
+            </div>
+            <button class="btn full mt-3" onclick="mergePdfs()">Merge PDFs</button>
+          `;
+          break;
+
+        case 'word-to-pdf':
+          title.textContent = 'Word to PDF Converter';
+          content.innerHTML = `
+            <p class="muted">Convert a Word document to PDF format.</p>
+            <div class="mt-3">
+              <label class="muted">Select Word file (docx):</label>
+              <input class="input" type="file" id="wordToPdfInput" accept=".docx,.doc" />
+            </div>
+            <button class="btn full mt-3" onclick="convertWordToPdf()">Convert to PDF</button>
+          `;
+          break;
+
+        case 'pdf-to-images':
+          title.textContent = 'PDF to Images Converter';
+          content.innerHTML = `
+            <p class="muted">Convert each page of a PDF to individual images.</p>
+            <div class="mt-3">
+              <label class="muted">Select PDF file:</label>
+              <input class="input" type="file" id="pdfToImagesInput" accept=".pdf" />
+            </div>
+            <div class="mt-3">
+              <label class="muted">Image format:</label>
+              <select class="input" id="imageFormat">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="webp">WebP</option>
+              </select>
+            </div>
+            <button class="btn full mt-3" onclick="convertPdfToImages()">Convert to Images</button>
+          `;
+          break;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    // ---------------- File Upload via Backend ----------------
+    async function uploadFile() {
+      const nameInput = document.getElementById('username');
+      const fileEl = document.getElementById('fileInput');
+      
+      const name = nameInput.value.trim();
+      if (!name) { alert('Please enter your name'); nameInput.focus(); return; }
+
+      const file = fileEl.files[0];
+      if (!file) { alert('Please select a file'); return; }
+
+      const uploadStatus = document.getElementById('uploadStatus');
+      uploadStatus.classList.remove('hidden');
+      uploadStatus.innerText = 'Requesting upload link...';
+
+      try {
+        // 1️⃣ Request presigned URL from Flask backend
+        const res = await fetch(`${backendUrl}/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, filetype: file.type })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload URL failed');
+
+        // 2️⃣ Upload file to S3 using presigned URL
+        await fetch(data.upload_url, { method: 'PUT', body: file });
+        
+        generatedCode = data.code;
+        uploadStatus.innerText = 'Upload successful!';
+
+        // 3️⃣ Show share section and QR code
+        showShareSection(generatedCode);
+
+      } catch (err) {
+        console.error(err);
+        uploadStatus.innerText = 'Upload failed: ' + err.message;
+      }
+    }
+
+    // ---------------- Share Section & QR ----------------
+    function showShareSection(code) {
+      const shareBox = document.getElementById('shareBox');
+      shareBox.classList.remove('hidden');
+
+      document.getElementById('shareCode').innerText = code;
+
+      const qrContainer = document.getElementById('qrCode');
+      qrContainer.innerHTML = '';
+
+      const img = document.createElement('img');
+      img.src = `${backendUrl}/get_qr/${code}`;
+      img.alt = "QR Code";
+      img.width = 80;
+      img.height = 80;
+      qrContainer.appendChild(img);
+    }
+
+    // ---------------- Copy Code ----------------
+    function copyCode() {
+      if (!generatedCode) return alert('No code yet');
+      navigator.clipboard.writeText(generatedCode);
+      alert('Code copied: ' + generatedCode);
+    }
+
+    // ---------------- Share Link ----------------
+    function shareLink() {
+      if (!generatedCode) return alert('No code to share');
+      const url = `${backendUrl}/download/${generatedCode}`;
+      if (navigator.share) {
+        navigator.share({ title: 'YCloud File', text: `Download using code ${generatedCode}`, url })
+          .catch(() => navigator.clipboard.writeText(url));
+      } else {
+        navigator.clipboard.writeText(url);
+        alert('Link copied to clipboard');
+      }
+    }
+
+    // ---------------- Download File ----------------
+    function downloadFile() {
+      const code = (document.getElementById('fileCode').value || '').trim();
+      if (!code) return alert('Please enter code');
+
+      const status = document.getElementById('downloadStatus');
+      status.classList.remove('hidden');
+      status.innerText = 'Resolving download...';
+
+      // Redirect to backend download route
+      window.location.href = `${backendUrl}/download/${code}`;
+    }
+
+    // ---------------- Document Tool Functions ----------------
+    async function convertPdfToWord() {
+      const fileInput = document.getElementById('pdfToWordInput');
+      const progress = document.getElementById('docToolProgress');
+      const result = document.getElementById('docToolResult');
+
+      if (!fileInput.files.length) return alert('Please select a PDF file first');
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      progress.classList.remove('hidden');
+      progress.textContent = 'Converting PDF to Word...';
+      
+      try {
+        const res = await fetch(`${backendUrl}/doc/pdf_to_word`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.download_url) {
+          result.innerHTML = `
+            <p>Conversion complete!</p>
+            <a href="${data.download_url}" target="_blank" class="btn">Download Word Document</a>
+          `;
+        } else {
+          result.innerHTML = `<p class="error">Conversion failed!</p>`;
+        }
+      } catch (err) {
+        result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      }
+
+      result.classList.remove('hidden');
+      progress.classList.add('hidden');
+    }
+
+    async function mergePdfs() {
+      const fileInput = document.getElementById('mergePdfsInput');
+      const progress = document.getElementById('docToolProgress');
+      const result = document.getElementById('docToolResult');
+
+      if (!fileInput.files.length || fileInput.files.length < 2) {
+        return alert('Please select at least 2 PDF files to merge');
+      }
+
+      const formData = new FormData();
+      for (let f of fileInput.files) {
+        formData.append("files", f);
+      }
+
+      progress.classList.remove('hidden');
+      progress.textContent = 'Merging PDF files...';
+
+      try {
+        const res = await fetch(`${backendUrl}/doc/merge_pdfs`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.download_url) {
+          result.innerHTML = `
+            <p>Merged PDFs successfully!</p>
+            <a href="${data.download_url}" target="_blank" class="btn">Download Merged PDF</a>
+          `;
+        } else {
+          result.innerHTML = `<p class="error">Merge failed!</p>`;
+        }
+      } catch (err) {
+        result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      }
+
+      result.classList.remove('hidden');
+      progress.classList.add('hidden');
+    }
+
+    async function convertWordToPdf() {
+      const fileInput = document.getElementById('wordToPdfInput');
+      const progress = document.getElementById('docToolProgress');
+      const result = document.getElementById('docToolResult');
+
+      if (!fileInput.files.length) return alert('Please select a Word document first');
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      progress.classList.remove('hidden');
+      progress.textContent = 'Converting Word to PDF...';
+
+      try {
+        const res = await fetch(`${backendUrl}/doc/word_to_pdf`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.download_url) {
+          result.innerHTML = `
+            <p>Conversion complete!</p>
+            <a href="${data.download_url}" target="_blank" class="btn">Download PDF</a>
+          `;
+        } else {
+          result.innerHTML = `<p class="error">Conversion failed!</p>`;
+        }
+      } catch (err) {
+        result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      }
+      
+      result.classList.remove('hidden');
+      progress.classList.add('hidden');
+    }
+
+    async function convertPdfToImages() {
+      const fileInput = document.getElementById('pdfToImagesInput');
+      const progress = document.getElementById('docToolProgress');
+      const result = document.getElementById('docToolResult');
+
+      if (!fileInput.files.length) return alert('Please select a PDF file first');
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      progress.classList.remove('hidden');
+      progress.textContent = 'Converting PDF to Images...';
+
+      try {
+        const res = await fetch(`${backendUrl}/doc/pdf_to_images`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.download_urls && data.download_urls.length > 0) {
+          let links = data.download_urls.map((url, i) =>
+            `<li><a href="${url}" target="_blank">Download Page ${i+1}</a></li>`
+          ).join("");
+          result.innerHTML = `
+            <p>Converted PDF to images successfully!</p>
+            <ul>${links}</ul>
+          `;
+        } else {
+          result.innerHTML = `<p class="error">Conversion failed!</p>`;
+        }
+      } catch (err) {
+        result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      }
+
+      result.classList.remove('hidden');
+      progress.classList.add('hidden');
+    }
+
+    // ---------------- OCR Functionality ----------------
+    async function performOCR() {
+  const fileInput = document.getElementById('ocrImageInput');
+  const resultDiv = document.getElementById('ocrResult');
+  const progressDiv = document.getElementById('ocrProgress');
+  const extractedText = document.getElementById('extractedText');
+
+  if (!fileInput.files.length) {
+    return alert('Please select an image first');
+  }
+
+  progressDiv.classList.remove('hidden');
+  resultDiv.classList.add('hidden');
+  extractedText.textContent = '';
+
+  try {
+    const file = fileInput.files[0];
+    console.log('[OCR] Processing file:', file.name);
+
+    const { data: { text } } = await Tesseract.recognize(file, 'eng', {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          progressDiv.textContent = `Processing... ${Math.round(m.progress * 100)}%`;
+        }
+      }
+    });
+
+    console.log('[OCR] Extracted text:', text);
+
+    extractedText.textContent = text.trim() === "" 
+      ? "OCR completed, but no text was found in the image." 
+      : text;
+
+    resultDiv.classList.remove('hidden');
+  } catch (error) {
+    console.error("OCR Error:", error);
+    alert("OCR failed. See console for details.");
+  } finally {
+    progressDiv.classList.add('hidden');
+  }
+}
+
+    // ---------------- Image Resizer Functionality ----------------
+    async function resizeImage() {
+      const fileInput = document.getElementById('resizeImageInput');
+      const widthInput = document.getElementById('resizeWidth');
+      const heightInput = document.getElementById('resizeHeight');
+      const resultDiv = document.getElementById('resizeResult');
+
+      if (!fileInput.files.length) return alert('Please select an image first');
+
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+
+      if (!width || !height || width <= 0 || height <= 0) return alert('Please enter valid width and height values');
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("width", width);
+      formData.append("height", height);
+      
+      console.log('[Resize] Sending file to backend:', fileInput.files[0].name, 'Width:', width, 'Height:', height);
+
+      try {
+        const res = await fetch(`${backendUrl}/img/resize`, { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (data.download_url) {
+          resultDiv.innerHTML = `
+            <p>Resized Image (${width} × ${height} px)</p>
+            <a href="${data.download_url}" target="_blank" class="btn">Download Resized Image</a>
+          `;
+          resultDiv.classList.remove('hidden');
+        } else alert(data.error || "Resize failed");
+      } catch (error) {
+        console.error("Resize Error:", error);
+        alert("Resize request failed. See console for details.");
+      }
+    }
+
+    // ---------------- Quick Route Navigation ----------------
+    function go(path) {
+      if (path === '/img/ocr') openOCRModal();
+      else if (path === '/img/resize') openImageResizer();
+      else alert('This tool would open at: ' + path);
+    }
+
+    // ---------------- Accent Color Shuffler ----------------
+    function shuffleAccent() {
+      const palette = [
+        ['#7cf0ff', '#9a8cff'],
+        ['#22d3ee', '#a78bfa'],
+        ['#34d399', '#60a5fa'],
+        ['#f472b6', '#fb7185'],
+        ['#f59e0b', '#ef4444'],
+      ];
+      const pick = palette[Math.floor(Math.random() * palette.length)];
+      document.documentElement.style.setProperty('--brand', pick[0]);
+      document.documentElement.style.setProperty('--brand-2', pick[1]);
+    }
+
+    // ---------------- Initialize Page ----------------
+    function init() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+
+      if (code) {
+        document.getElementById('fileCode').value = code;
+      }
+
+      console.log("YCloud Dashboard initialized");
+    }
+
+    init();
+  </script>
+</body>
+</html>
