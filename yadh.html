@@ -10,40 +10,28 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.1"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js@2.0.5/FileSaver.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* ----------------------------------------
-       Premium CSS Starter Kit - YCloud Edition
-       ---------------------------------------- */
-
     :root {
-      /* Color system */
-      --bg: #0b0f17;             /* base background */
-      --panel: rgba(255,255,255,0.06); /* glass surface */
+      --bg: #0b0f17;
+      --panel: rgba(255,255,255,0.06);
       --panel-strong: rgba(255,255,255,0.12);
-      --text: #eaf0f8;           /* primary text */
-      --muted: #b9c4d4;          /* secondary text */
-      --brand: #7cf0ff;          /* accent */
-      --brand-2: #9a8cff;        /* accent 2 */
-      --error: #ff6b6b;          /* error */
-      --ok: #3ddc97;             /* success */
-      --warn: #ffd166;           /* warning */
-
-      /* Radii & shadow */
+      --text: #eaf0f8;
+      --muted: #b9c4d4;
+      --brand: #7cf0ff;
+      --brand-2: #9a8cff;
+      --error: #ff6b6b;
+      --ok: #3ddc97;
+      --warn: #ffd166;
       --radius: 16px;
       --radius-lg: 20px;
       --shadow-soft: 0 10px 30px rgba(0,0,0,.25);
       --shadow-hard: 0 20px 60px rgba(0,0,0,.35);
       --ring: 0 0 0 3px color-mix(in srgb, var(--brand) 30%, transparent);
-
-      /* Blur */
       --blur: 14px;
-
-      /* Typography */
       --font-sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       --font-alt: "Plus Jakarta Sans", var(--font-sans);
       --fs-xxl: clamp(2.2rem, 1.4rem + 2.5vw, 3.3rem);
@@ -51,22 +39,18 @@
       --fs-lg: 1.25rem;
       --fs-md: 1rem;
       --fs-sm: .9rem;
-
-      /* Spacing scale */
       --sp-1: .5rem;
       --sp-2: .75rem;
       --sp-3: 1rem;
       --sp-4: 1.5rem;
       --sp-5: 2rem;
       --sp-6: 3rem;
-
-      /* Transitions */
       --t-fast: 160ms ease;
       --t-normal: 260ms cubic-bezier(.2,.8,.2,1);
       --t-slow: 500ms cubic-bezier(.2,.8,.2,1);
     }
 
-    /* Base */
+    * { box-sizing: border-box; }
     html, body {
       height: 100%;
       background:
@@ -76,8 +60,6 @@
       color: var(--text);
       font-family: var(--font-sans);
       line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
       margin: 0;
       padding: 0;
     }
@@ -88,361 +70,174 @@
       padding: var(--sp-4) 0;
     }
 
-    h1, h2, h3, h4, h5 { 
-      font-family: var(--font-alt);
-      font-weight: 700;
-      color: var(--text);
-      margin: 0 0 var(--sp-2) 0;
-    }
-    
+    h1,h2,h3,h4,h5 { font-family: var(--font-alt); font-weight: 700; margin: 0 0 var(--sp-2) 0; color: var(--text); }
     h1 { font-size: var(--fs-xxl); letter-spacing: -.02em; }
     h2 { font-size: var(--fs-xl); letter-spacing: -.01em; }
     h3 { font-size: var(--fs-lg); }
     h4 { font-size: var(--fs-md); }
     h5 { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.05em; }
-    
     p.lead { font-size: var(--fs-lg); color: var(--muted); max-width: 60ch; }
 
-    /* Card (glass) */
-    .card {
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius-lg);
+    .navbar {
+      position: sticky; top:0; z-index:20;
       backdrop-filter: blur(var(--blur));
-      -webkit-backdrop-filter: blur(var(--blur));
-      box-shadow: var(--shadow-soft);
-      padding: var(--sp-4);
-      transition: transform var(--t-normal), box-shadow var(--t-normal);
+      background: linear-gradient(180deg, rgba(0,0,0,.35), transparent);
+      border-bottom:1px solid rgba(255,255,255,.12);
+      margin-bottom: var(--sp-4);
     }
+    .nav-inner { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 0; }
+    .brand { display:flex; align-items:center; gap:.7rem; font-weight:800; letter-spacing:.02em; font-family: var(--font-alt); }
+    .brand .logo { height:40px; width:auto; }
+    .nav-actions { display:flex; gap:.6rem; }
 
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-hard);
-    }
-
-    /* Buttons */
     .btn {
       --_bg: linear-gradient(180deg, color-mix(in srgb, var(--brand) 70%, white 0%), color-mix(in srgb, var(--brand) 40%, black 8%));
       --_fg: #021018;
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center;
-      gap: .6rem;
-      border: none; 
-      cursor: pointer; 
-      user-select: none;
-      padding: .75rem 1.1rem; 
-      border-radius: var(--radius);
-      font-weight: 600; 
-      letter-spacing: .01em;
-      background: var(--_bg); 
-      color: var(--_fg);
+      display: inline-flex; align-items:center; justify-content:center;
+      gap: .6rem; border:none; cursor:pointer;
+      padding: .75rem 1.1rem; border-radius: var(--radius);
+      font-weight:600; letter-spacing:.01em; font-size: var(--fs-sm);
+      background: var(--_bg); color: var(--_fg);
       box-shadow: 0 12px 24px color-mix(in srgb, var(--brand) 30%, transparent), inset 0 0 0 1px rgba(255,255,255,.45);
       transition: transform var(--t-fast), box-shadow var(--t-normal), filter var(--t-fast);
-      font-size: var(--fs-sm);
-      text-decoration: none;
+      box-sizing: border-box;
+      height:46px;
     }
-    
-    .btn:hover { 
-      transform: translateY(-2px); 
-      box-shadow: 0 16px 30px color-mix(in srgb, var(--brand) 38%, transparent), inset 0 0 0 1px rgba(255,255,255,.6); 
-    }
-    
-    .btn:active { 
-      transform: translateY(0); 
-      filter: saturate(.9); 
-    }
-    
-    .btn.ghost { 
-      background: transparent; 
-      color: var(--text); 
-      border: 1px solid rgba(255,255,255,.24); 
-      box-shadow: var(--shadow-soft); 
-    }
-    
-    .btn.secondary { 
-      --_bg: linear-gradient(180deg, color-mix(in srgb, var(--brand-2) 75%, white 0%), color-mix(in srgb, var(--brand-2) 40%, black 8%)); 
-    }
-    
-    .btn.full {
-      width: 100%;
-    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 16px 30px color-mix(in srgb, var(--brand) 38%, transparent), inset 0 0 0 1px rgba(255,255,255,.6); }
+    .btn:active { transform:translateY(0); filter: saturate(.9); }
+    .btn.ghost { background:transparent; color: var(--text); border:1px solid rgba(255,255,255,.24); box-shadow: var(--shadow-soft);}
+    .btn.secondary { --_bg: linear-gradient(180deg, color-mix(in srgb, var(--brand-2) 75%, white 0%), color-mix(in srgb, var(--brand-2) 40%, black 8%)); }
+    .btn.full { width:100%; }
+    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-    /* Inputs */
     .input {
-      width: 100%;
-      padding: .9rem 1rem;
+      width:100%; padding:12px 15px; height:46px;
       border-radius: var(--radius);
       background: color-mix(in srgb, var(--panel) 60%, transparent);
       backdrop-filter: blur(var(--blur));
-      border: 1px solid rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.18);
       color: var(--text);
-      outline: none;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-      transition: box-shadow var(--t-fast), border-color var(--t-fast);
-      font-family: var(--font-sans);
-      font-size: var(--fs-sm);
+      outline:none; font-family: var(--font-sans); font-size: var(--fs-sm);
       margin-bottom: var(--sp-2);
+      box-sizing: border-box;
     }
-    
-    .input:focus { 
-      box-shadow: var(--ring), inset 0 1px 0 rgba(255,255,255,.12); 
-      border-color: color-mix(in srgb, var(--brand) 35%, white 0%); 
+    textarea.input { height: auto; }
+    .input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 30%, transparent);
     }
 
-    /* Navbar */
-    .navbar {
-      position: sticky; 
-      top: 0; 
-      z-index: 20;
+    .tabs { display:flex; gap:5px; margin-bottom: var(--sp-4); background: var(--panel); padding:5px; border-radius: var(--radius); border:1px solid rgba(255,255,255,.12);}
+    .tab-btn { flex:1; text-align:center; padding:10px; border-radius:calc(var(--radius)-4px); background:transparent; border:none; color: var(--muted); font-weight:600; cursor:pointer; transition: all var(--t-normal);}
+    .tab-btn.active { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color:#021018;}
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    .card {
+      background: var(--panel);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-lg);
       backdrop-filter: blur(var(--blur));
-      -webkit-backdrop-filter: blur(var(--blur));
-      background: linear-gradient(180deg, rgba(0,0,0,.35), transparent);
-      border-bottom: 1px solid rgba(255,255,255,.12);
-      margin-bottom: var(--sp-4);
+      box-shadow: var(--shadow-soft);
+      padding: var(--sp-4);
+      transition: transform var(--t-normal), box-shadow var(--t-normal);
+      display:flex; flex-direction:column;
+      height:100%;
     }
-    
-    .nav-inner { 
-      display:flex; 
-      align-items:center; 
-      justify-content:space-between; 
-      gap:1rem; 
-      padding: .9rem 0; 
-    }
-    
-    .brand { 
-      display:flex; 
-      align-items:center; 
-      gap:.7rem; 
-      font-weight:800; 
-      letter-spacing:.02em; 
-      font-family: var(--font-alt);
-    }
-    
-    .brand .logo {
-      height: 40px;
-      width: auto;
-    }
-    
-    .nav-actions { 
-      display:flex; 
-      gap:.6rem; 
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hard); }
+
+    .cards {
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+      gap:20px;
+      align-items: stretch;
     }
 
-    /* Grid */
-    .grid { 
-      display:grid; 
-      gap: var(--sp-4); 
+    .grid-2 {
+      display:grid;
+      grid-template-columns: 350px 1fr;
+      gap:25px;
+      align-items:start;
     }
-    
-    .grid-2 { 
-      grid-template-columns: 1fr 2fr; 
-    }
-    
-    @media (max-width: 900px){ 
-      .grid-2 { 
-        grid-template-columns: 1fr; 
-      } 
-    }
+    .left-column, .right-column { height:100%; }
 
-    /* Badges / Pills */
-    .pill { 
-      display:inline-flex; 
-      align-items:center; 
-      gap:.5rem;
-      padding:.4rem .7rem; 
-      border-radius:999px; 
-      background: color-mix(in srgb, var(--brand) 18%, transparent); 
-      color: var(--text); 
-      border:1px solid rgba(255,255,255,.2); 
-      font-weight:600; 
-      font-size:.85rem; 
-      margin-bottom: var(--sp-2);
-    }
+    .tool-card { display:flex; flex-direction:column; height:100%; min-height:200px; }
+    .tool-card-content { flex-grow:1; }
 
-    /* Divider */
-    .hr { 
-      height:1px; 
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent); 
-      border:none; 
-      margin: var(--sp-3) 0; 
-    }
+    .pill { display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .7rem; border-radius:999px; background: color-mix(in srgb, var(--brand) 18%, transparent); color: var(--text); border:1px solid rgba(255,255,255,.2); font-weight:600; font-size:.85rem; margin-bottom: var(--sp-2);}
+    .hr { height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent); border:none; margin: var(--sp-3) 0; }
+    .muted { color: var(--muted); }
+    .hidden { display:none !important; }
+    .mt-1 { margin-top: var(--sp-1); } .mt-2 { margin-top: var(--sp-2);} .mt-3 { margin-top: var(--sp-3);} .mt-4 { margin-top: var(--sp-4);}
+    .mb-1 { margin-bottom: var(--sp-1); } .mb-2 { margin-bottom: var(--sp-2);} .mb-3 { margin-bottom: var(--sp-3);}
+    .flex { display:flex; } .gap-2 { gap: var(--sp-2); } .gap-3 { gap: var(--sp-3); }
 
-    /* Status messages */
+    .modal-overlay {
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,.7);
+      display:flex; align-items:center; justify-content:center;
+      z-index:1000; backdrop-filter:blur(5px); padding:var(--sp-3);
+    }
+    .modal-content {
+      width:100%; max-width:500px; max-height:90vh; overflow-y:auto;
+      background:var(--panel); border:1px solid rgba(255,255,255,.12); border-radius:var(--radius-lg);
+      backdrop-filter: blur(var(--blur)); padding:var(--sp-4); box-shadow:var(--shadow-hard);
+    }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-3);}
+    .modal-close { background:none; border:none; font-size:24px; color: var(--text); cursor:pointer; }
+
+    .qr-box { display:flex; gap:var(--sp-3); align-items:center; margin-top: var(--sp-3); padding: var(--sp-3); background: color-mix(in srgb, var(--panel) 70%, transparent); border-radius:var(--radius); border:1px solid rgba(255,255,255,.12);}
+    .qr-container { width:80px; height:80px; background:white; padding:5px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+
     .status {
-      padding: var(--sp-2);
+      padding: 10px 15px;
       border-radius: var(--radius);
       margin-top: var(--sp-2);
       font-size: var(--fs-sm);
-      background: color-mix(in srgb, var(--panel) 70%, transparent);
+    }
+    .status.success {
+      background: color-mix(in srgb, var(--ok) 20%, transparent);
+      border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent);
+    }
+    .status.error {
+      background: color-mix(in srgb, var(--error) 20%, transparent);
+      border: 1px solid color-mix(in srgb, var(--error) 40%, transparent);
+    }
+    .status.info {
+      background: color-mix(in srgb, var(--brand) 20%, transparent);
+      border: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
     }
 
-    /* QR Box */
-    .qr-box {
-      display: flex;
-      gap: var(--sp-3);
-      align-items: center;
-      margin-top: var(--sp-3);
-      padding: var(--sp-3);
-      background: color-mix(in srgb, var(--panel) 70%, transparent);
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,.12);
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: var(--brand);
+      animation: spin 1s ease-in-out infinite;
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
     }
 
-    .qr-container {
-      width: 80px;
-      height: 80px;
-      background: white;
-      padding: 5px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 5px;
-      margin-bottom: var(--sp-4);
-      background: var(--panel);
-      padding: 5px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,.12);
-    }
+    .fade-up { opacity:0; transform:translateY(12px); animation:fadeUp var(--t-slow) forwards; }
+    .fade-up.del-1 { animation-delay:.12s; } .fade-up.del-2 { animation-delay:.2s; } .fade-up.del-3 { animation-delay:.28s; }
+    @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
 
-    .tab-btn {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      border-radius: calc(var(--radius) - 4px);
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-weight: 600;
-      cursor: pointer;
-      transition: all var(--t-normal);
-    }
-
-    .tab-btn.active {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      color: #021018;
-    }
-
-    .tab-panel {
-      display: none;
-    }
-
-    .tab-panel.active {
-      display: block;
-    }
-
-    /* Cards Grid */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: var(--sp-3);
-    }
-
-    /* Modal */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      backdrop-filter: blur(5px);
-      padding: var(--sp-3);
-    }
-
-    .modal-content {
-      width: 100%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius-lg);
-      backdrop-filter: blur(var(--blur));
-      padding: var(--sp-4);
-      box-shadow: var(--shadow-hard);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--sp-3);
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 24px;
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    /* Utilities */
-    .hidden {
-      display: none !important;
-    }
-
-    .mt-1 { margin-top: var(--sp-1); } 
-    .mt-2 { margin-top: var(--sp-2);} 
-    .mt-3 { margin-top: var(--sp-3);} 
-    .mt-4 { margin-top: var(--sp-4);} 
-    
-    .mb-1 { margin-bottom: var(--sp-1); } 
-    .mb-2 { margin-bottom: var(--sp-2);} 
-    .mb-3 { margin-bottom: var(--sp-3);} 
-    
-    .flex { display: flex; }
-    .gap-2 { gap: var(--sp-2); } 
-    .gap-3 { gap: var(--sp-3); } 
-    
-    .muted {
-      color: var(--muted);
-    }
-
-    /* Animations */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(12px);
-      animation: fadeUp var(--t-slow) forwards;
-    }
-    
-    .fade-up.del-1 { animation-delay: .12s; }
-    .fade-up.del-2 { animation-delay: .2s; }
-    .fade-up.del-3 { animation-delay: .28s; }
-    
-    @keyframes fadeUp { 
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
-      } 
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
-      
-      .qr-box {
-        flex-direction: column;
-        text-align: center;
-      }
+    @media(max-width:900px){
+      .grid-2 { grid-template-columns:1fr; }
+      .card { height:auto; }
+      .cards { grid-template-columns:1fr; }
+      .qr-box { flex-direction:column; text-align:center; }
+      .tabs { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
   <div class="navbar">
     <div class="container nav-inner">
       <div class="brand">
@@ -462,21 +257,20 @@
     </header>
 
     <div class="grid grid-2 mt-4">
-      <!-- LEFT: Upload / Send / Receive -->
       <aside class="card fade-up del-1">
         <h4>Send / Receive</h4>
         <p class="muted mb-2">Enter Your Name</p>
-        <input class="input" id="username" type="text" placeholder="Your name (for share)">
+        <input class="input" id="username" type="text" placeholder="Your name (for share)" aria-label="Your name">
 
         <hr class="hr">
 
         <h5 class="muted">Send (Upload)</h5>
-        <input class="input" id="fileInput" type="file" />
-        <button class="btn full" onclick="uploadFile()">Upload & Generate Code</button>
+        <input class="input" id="fileInput" type="file" aria-label="Select file to upload" />
+        <button class="btn full" id="uploadBtn" onclick="uploadFile()">Upload & Generate Code</button>
         <div id="uploadStatus" class="status hidden">...</div>
 
         <div class="qr-box hidden" id="shareBox">
-          <div class="qr-container" id="qrCode"></div>
+          <div class="qr-container" id="qrCode" aria-label="QR code for file sharing"></div>
           
           <div>
             <div class="muted">Share Code</div>
@@ -491,23 +285,21 @@
         <hr class="hr">
 
         <h5 class="muted">Receive (Download)</h5>
-        <input class="input" id="fileCode" type="text" placeholder="Enter code (6-chars)">
+        <input class="input" id="fileCode" type="text" placeholder="Enter code (6-chars)" aria-label="File download code">
         <button class="btn secondary full" onclick="downloadFile()">Download</button>
         <div id="downloadStatus" class="status hidden">Waiting</div>
       </aside>
 
-      <!-- RIGHT: Tabs + Cards -->
       <main class="fade-up del-2">
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="ai">AI Tools</button>
-          <button class="tab-btn" data-tab="image">Image Tools</button>
-          <button class="tab-btn" data-tab="doc">Document Tools</button>
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="ai" role="tab" aria-selected="true" aria-controls="tab-ai">AI Tools</button>
+          <button class="tab-btn" data-tab="image" role="tab" aria-selected="false" aria-controls="tab-image">Image Tools</button>
+          <button class="tab-btn" data-tab="doc" role="tab" aria-selected="false" aria-controls="tab-doc">Document Tools</button>
         </div>
 
-        <!-- AI Tab -->
-        <section id="tab-ai" class="tab-panel active">
+        <section id="tab-ai" class="tab-panel active" role="tabpanel" aria-labelledby="ai-tab">
           <div class="cards">
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Smart Notes</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">🎤</div>
@@ -521,7 +313,7 @@
               </div>
             </div>
 
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Study Buddy</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">⚡</div>
@@ -531,11 +323,11 @@
                 </div>
               </div>
               <div class="mt-3">
-                <button class="btn" onclick="go('/YcloudSpark')">Open</button>
+                <button class="btn" onclick="openModal('sparkModal')">Open</button>
               </div>
             </div>
             
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Career AI</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">📄</div>
@@ -548,27 +340,26 @@
                 <button class="btn" onclick="go('/ai/resume')">Open</button>
               </div>
             </div>
-          </div>
-		  <div class="card">
+            
+            <div class="card tool-card">
               <div class="pill">Mindmap</div>
               <div class="flex gap-3">
-                <div style="font-size:24px;">📄</div>
+                <div style="font-size:24px;">🧠</div>
                 <div>
                   <h4>YCloud Mindmap</h4>
                   <p class="muted">Convert your pdf's into suitable mindmap</p>
                 </div>
               </div>
               <div class="mt-3">
-                <button class="btn" onclick="go('/ai/mindmap')">Open</button>
+                <button class="btn" onclick="openModal('mindmapModal')">Open</button>
               </div>
             </div>
           </div>
         </section>
         
-        <!-- Image Tab -->
-        <section id="tab-image" class="tab-panel">
+        <section id="tab-image" class="tab-panel" role="tabpanel" aria-labelledby="image-tab" hidden>
           <div class="cards">
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Image Tools</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">🖼️</div>
@@ -578,11 +369,11 @@
                 </div>
               </div>
               <div class="mt-3">
-                <button class="btn" onclick="openImageResizer()">Open</button>
+                <button class="btn" onclick="openModal('resizeModal')">Open</button>
               </div>
             </div>
 
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">OCR</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">🔎</div>
@@ -592,16 +383,15 @@
                 </div>
               </div>
               <div class="mt-3">
-                <button class="btn" onclick="openOCRModal()">Open</button>
+                <button class="btn" onclick="openModal('ocrModal')">Open</button>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- DOC Tab -->
-        <section id="tab-doc" class="tab-panel">
+        <section id="tab-doc" class="tab-panel" role="tabpanel" aria-labelledby="doc-tab" hidden>
           <div class="cards">
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Doc Tools</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">📄</div>
@@ -615,7 +405,7 @@
               </div>
             </div>
 
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Doc Tools</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">🗂️</div>
@@ -629,7 +419,7 @@
               </div>
             </div>
 
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Doc Tools</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">📄</div>
@@ -643,7 +433,7 @@
               </div>
             </div>
             
-            <div class="card">
+            <div class="card tool-card">
               <div class="pill">Doc Tools</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">🖼️</div>
@@ -662,95 +452,224 @@
     </div>
   </div>
   
-  <!-- Image Resizer Modal -->
-  <div id="resizeModal" class="modal-overlay hidden">
+  <div id="resizeModal" class="modal-overlay hidden" role="dialog" aria-labelledby="resizeModalTitle" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Resize Image</h3>
-        <button class="modal-close" onclick="closeImageResizer()">&times;</button>
+        <h3 id="resizeModalTitle">Resize Image</h3>
+        <button class="modal-close" onclick="closeModal('resizeModal')" aria-label="Close modal">&times;</button>
       </div>
-      <input class="input" id="resizeImageInput" type="file" accept="image/*">
-      <input class="input" id="resizeWidth" type="text" placeholder="Width (px)">
-      <input class="input" id="resizeHeight" type="text" placeholder="Height (px)">
-      <button class="btn full" onclick="resizeImage()">Resize</button>
+      <input class="input" id="resizeImageInput" type="file" accept="image/*" aria-label="Select image to resize">
+      <input class="input" id="resizeWidth" type="number" placeholder="Width (px)" aria-label="Width in pixels" min="1">
+      <input class="input" id="resizeHeight" type="number" placeholder="Height (px)" aria-label="Height in pixels" min="1">
+      <button class="btn full" id="resizeBtn" onclick="resizeImage()">Resize</button>
       <div id="resizeResult" class="status hidden mt-3"></div>
     </div>
   </div>
 
-  <!-- Image OCR Modal -->
-  <div id="ocrModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Image OCR</h3>
-      <button class="modal-close" onclick="closeOCRModal()">&times;</button>
-    </div>
+  <div id="ocrModal" class="modal-overlay hidden" role="dialog" aria-labelledby="ocrModalTitle" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="ocrModalTitle">Image OCR</h3>
+        <button class="modal-close" onclick="closeModal('ocrModal')" aria-label="Close modal">&times;</button>
+      </div>
 
-    <input class="input" id="ocrImageInput" type="file" accept="image/*">
-    <button class="btn full" onclick="performOCR()">Extract Text</button>
+      <input class="input" id="ocrImageInput" type="file" accept="image/*" aria-label="Select image for OCR">
+      <button class="btn full" id="ocrBtn" onclick="performOCR()">Extract Text</button>
 
-    <div id="ocrProgress" class="status hidden mt-3">Processing...</div>
-    <div id="ocrResult" class="status hidden mt-3">
-      <pre id="extractedText"></pre>
+      <div id="ocrProgress" class="status hidden mt-3">Processing...</div>
+      <div id="ocrResult" class="status hidden mt-3">
+        <pre id="extractedText" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+        <button class="btn ghost mt-2" onclick="copyOcrText()">Copy Text</button>
+      </div>
     </div>
   </div>
-</div>
 
-  <!-- Document Tools Modal -->
-  <div id="docToolModal" class="modal-overlay hidden">
+  <div id="docToolModal" class="modal-overlay hidden" role="dialog" aria-labelledby="docToolTitle" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="docToolTitle">Document Tool</h3>
-        <button class="modal-close" onclick="closeModal('docToolModal')">&times;</button>
+        <button class="modal-close" onclick="closeModal('docToolModal')" aria-label="Close modal">&times;</button>
       </div>
       <div>
         <div id="docToolContent">
-          <!-- Content will be dynamically inserted based on the tool -->
-        </div>
+          </div>
         <div id="docToolProgress" class="status hidden mt-3"></div>
         <div id="docToolResult" class="status hidden mt-3"></div>
       </div>
     </div>
   </div>
 
+  <div id="sparkModal" class="modal-overlay hidden" role="dialog" aria-labelledby="sparkModalTitle" aria-hidden="true">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="sparkModalTitle">⚡ YCloud Spark</h3>
+        <button class="modal-close" onclick="closeModal('sparkModal')" aria-label="Close modal">&times;</button>
+      </div>
+      <p class="muted mb-3">Upload a PDF/TXT or paste text to generate summaries, Q&A, quizzes, and flashcards.</p>
+      
+      <div class="flex gap-2 mb-3">
+          <input class="input" type="file" id="sparkFileInput" accept=".pdf,.txt" aria-label="Upload PDF or Text file" style="flex:1;">
+      </div>
+      <textarea class="input" id="sparkTextInput" rows="4" placeholder="Or paste your text here..."></textarea>
+      <button class="btn full mt-2" id="sparkGenerateBtn" onclick="generateSparkContent()">Generate Insights</button>
+
+      <div id="sparkProgress" class="status hidden mt-3"></div>
+      <div id="sparkResultContainer" class="hidden mt-3">
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-spark-tab="summary" role="tab">Summary</button>
+          <button class="tab-btn" data-spark-tab="qa" role="tab">Q&A</button>
+          <button class="tab-btn" data-spark-tab="quiz" role="tab">Quiz</button>
+          <button class="tab-btn" data-spark-tab="flashcards" role="tab">Flashcards</button>
+        </div>
+        <div id="sparkOutput" class="card" style="margin-top:-20px; border-top-left-radius:0; border-top-right-radius:0; max-height: 40vh; overflow-y: auto;">
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mindmapModal" class="modal-overlay hidden" role="dialog" aria-labelledby="mindmapModalTitle" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="mindmapModalTitle">🧠 YCloud Mindmap</h3>
+        <button class="modal-close" onclick="closeModal('mindmapModal')" aria-label="Close modal">&times;</button>
+      </div>
+      <p class="muted mb-3">Generate an interactive mindmap from your documents or text.</p>
+      
+      <div class="flex gap-2 mb-3">
+          <input class="input" type="file" id="mindmapFileInput" accept=".pdf,.txt" aria-label="Upload PDF or Text file" style="flex:1;">
+      </div>
+      <textarea class="input" id="mindmapTextInput" rows="4" placeholder="Or paste your text here..."></textarea>
+      <button class="btn full mt-2" id="mindmapGenerateBtn" onclick="generateMindmap()">Generate Mindmap</button>
+
+      <div id="mindmapProgress" class="status hidden mt-3"></div>
+      <div id="mindmapResultContainer" class="hidden mt-3">
+        <h4>Generated Mindmap</h4>
+        <div id="mindmapOutput" class="card" style="align-items:center; justify-content:center; min-height:300px;">
+          </div>
+        <div class="flex gap-2 mt-3">
+          <button class="btn ghost">Export as PNG</button>
+          <button class="btn ghost">Export as PDF</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <!--      Resume analyzer model-->
+  <div id="resumeAnalyzerModal" class="modal-overlay hidden" role="dialog" aria-labelledby="resumeAnalyzerModalTitle" aria-hidden="true">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="resumeAnalyzerModalTitle">📄 YCloud Resume Analyzer</h3>
+      <button class="modal-close" onclick="closeModal('resumeAnalyzerModal')" aria-label="Close modal">&times;</button>
+    </div>
+    
+    <p class="muted mb-3">Upload your resume and select a target role to get an ATS score and AI-powered feedback.</p>
+
+    <div class="mt-3">
+      <label class="muted">Upload your resume (.pdf, .docx):</label>
+      <input type="file" id="resume-file" accept=".pdf,.docx" class="input">
+      
+      <label class="muted mt-2">Select the target job role:</label>
+      <select id="role" class="input mt-1">
+        <option>Data Scientist</option>
+        <option>Java Developer</option>
+        <option>Python Developer</option>
+        <option>Cloud DevOps Engineer</option>
+        <option>DevOps Engineer</option>
+        <option>Data Analyst</option>
+        <option>Data Engineer</option>
+        <option>SAP Developer</option>
+        <option>Prompt Engineer</option>
+      </select>
+      
+      <button class="btn full mt-3" id="analyze-btn">Analyze Resume</button>
+      
+      <div id="status" class="status hidden mt-2"></div>
+    </div>
+
+    <div id="result" class="mt-4" style="display:none;">
+      <hr class="hr">
+      <h3>Analysis Result</h3>
+      <h4>Resume Score: <span id="score"></span>%</h4>
+      <p><strong>Matched Skills:</strong> <span id="matched"></span></p>
+      <p><strong>Missing Skills:</strong> <span id="missing"></span></p>
+      <div>
+        <strong>AI Feedback:</strong>
+        <textarea id="feedback" rows="8" readonly class="input"></textarea>
+      </div>
+    </div>
+
+</div>
+</div>
+<!--------        Voice to document       -->
+<div id="voiceDocModal" class="modal-overlay hidden" role="dialog" aria-labelledby="voiceDocTitle" aria-hidden="true">
+  <div class="modal-content" style="max-width:600px;">
+    <div class="modal-header">
+      <h3 id="voiceDocTitle">🎤 Voice → Document</h3>
+      <button class="modal-close" onclick="closeModal('voiceDocModal')" aria-label="Close modal">&times;</button>
+    </div>
+    <p class="muted mb-3">Record your voice for live transcription, then upload to generate a downloadable PDF or Word document.</p>
+
+    <div class="flex gap-2 mb-3">
+      <button class="btn full" id="startRecordingBtn">Start Recording</button>
+      <button class="btn ghost full" id="stopRecordingBtn" disabled>Stop Recording</button>
+    </div>
+
+    <textarea id="voiceText" class="input" rows="6" placeholder="Your live transcription will appear here..." readonly></textarea>
+
+    <div class="flex gap-2 mt-2">
+      <button class="btn full" id="downloadDocxBtn" disabled>Generate DOCX</button>
+      <button class="btn full ghost" id="downloadPdfBtn" disabled>Generate PDF</button>
+    </div>
+
+    <div id="voiceStatus" class="status hidden mt-2">Recording...</div>
+    <div id="downloadLinks" class="mt-2"></div> </div>
+</div>
+
   <script>
     // ---------------- Global Variables ----------------
-    const backendUrl = "https://yconnect.duckdns.org";
+   const backendUrl = "https://5000-yadhardha-yclouddream-472enwjsb11.ws-us121.gitpod.io/";
+
     let generatedCode = "";
+    let generatedFilename = "";
     let currentDocTool = "";
+    let currentOcrText = "";
 
     // ---------------- Tab Switching ----------------
     document.querySelectorAll('.tab-btn').forEach(button => {
       button.addEventListener('click', (e) => {
         // Update active tab button
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        });
         e.target.classList.add('active');
+        e.target.setAttribute('aria-selected', 'true');
         
         // Show corresponding tab panel
         const tabId = `tab-${e.target.dataset.tab}`;
-        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+          panel.classList.remove('active');
+          panel.setAttribute('hidden', 'true');
+        });
+        const activePanel = document.getElementById(tabId);
+        activePanel.classList.add('active');
+        activePanel.removeAttribute('hidden');
       });
     });
 
-    // ---------------- Modal Functions ----------------
-    function openImageResizer() {
-      document.getElementById('resizeModal').classList.remove('hidden');
-    }
-
-    function closeImageResizer() {
-      document.getElementById('resizeModal').classList.add('hidden');
-    }
-
-    function openOCRModal() {
-      document.getElementById('ocrModal').classList.remove('hidden');
-    }
-
-    function closeOCRModal() {
-      document.getElementById('ocrModal').classList.add('hidden');
+    // ---------------- Generic Modal Functions ----------------
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+        }
     }
 
     function closeModal(modalId) {
       document.getElementById(modalId).classList.add('hidden');
+      document.getElementById(modalId).setAttribute('aria-hidden', 'true');
     }
 
     // ---------------- Document Tools Modal ----------------
@@ -775,9 +694,9 @@
             <p class="muted">Convert a PDF file to an editable Word document.</p>
             <div class="mt-3">
               <label class="muted">Select PDF file:</label>
-              <input class="input" type="file" id="pdfToWordInput" accept=".pdf" />
+              <input class="input" type="file" id="pdfToWordInput" accept=".pdf" aria-label="Select PDF file" />
             </div>
-            <button class="btn full mt-3" onclick="convertPdfToWord()">Convert to Word</button>
+            <button class="btn full mt-3" id="pdfToWordBtn" onclick="convertPdfToWord()">Convert to Word</button>
           `;
           break;
           
@@ -787,9 +706,9 @@
             <p class="muted">Select multiple PDF files to merge into a single PDF.</p>
             <div class="mt-3">
               <label class="muted">Select PDF files (multiple):</label>
-              <input class="input" type="file" id="mergePdfsInput" accept=".pdf" multiple />
+              <input class="input" type="file" id="mergePdfsInput" accept=".pdf" multiple aria-label="Select PDF files" />
             </div>
-            <button class="btn full mt-3" onclick="mergePdfs()">Merge PDFs</button>
+            <button class="btn full mt-3" id="mergePdfsBtn" onclick="mergePdfs()">Merge PDFs</button>
           `;
           break;
 
@@ -799,9 +718,9 @@
             <p class="muted">Convert a Word document to PDF format.</p>
             <div class="mt-3">
               <label class="muted">Select Word file (docx):</label>
-              <input class="input" type="file" id="wordToPdfInput" accept=".docx,.doc" />
+              <input class="input" type="file" id="wordToPdfInput" accept=".docx,.doc" aria-label="Select Word file" />
             </div>
-            <button class="btn full mt-3" onclick="convertWordToPdf()">Convert to PDF</button>
+            <button class="btn full mt-3" id="wordToPdfBtn" onclick="convertWordToPdf()">Convert to PDF</button>
           `;
           break;
 
@@ -811,62 +730,84 @@
             <p class="muted">Convert each page of a PDF to individual images.</p>
             <div class="mt-3">
               <label class="muted">Select PDF file:</label>
-              <input class="input" type="file" id="pdfToImagesInput" accept=".pdf" />
+              <input class="input" type="file" id="pdfToImagesInput" accept=".pdf" aria-label="Select PDF file" />
             </div>
             <div class="mt-3">
               <label class="muted">Image format:</label>
-              <select class="input" id="imageFormat">
+              <select class="input" id="imageFormat" aria-label="Select image format">
                 <option value="png">PNG</option>
                 <option value="jpeg">JPEG</option>
                 <option value="webp">WebP</option>
               </select>
             </div>
-            <button class="btn full mt-3" onclick="convertPdfToImages()">Convert to Images</button>
+            <button class="btn full mt-3" id="pdfToImagesBtn" onclick="convertPdfToImages()">Convert to Images</button>
           `;
           break;
       }
 
       modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
     }
 
     // ---------------- File Upload via Backend ----------------
     async function uploadFile() {
       const nameInput = document.getElementById('username');
       const fileEl = document.getElementById('fileInput');
-      
+      const uploadBtn = document.getElementById('uploadBtn');
+
       const name = nameInput.value.trim();
-      if (!name) { alert('Please enter your name'); nameInput.focus(); return; }
+      if (!name) { 
+        showStatus('uploadStatus', 'Please enter your name', 'error');
+        nameInput.focus(); 
+        return; 
+      }
 
       const file = fileEl.files[0];
-      if (!file) { alert('Please select a file'); return; }
+      if (!file) { 
+        showStatus('uploadStatus', 'Please select a file', 'error');
+        return; 
+      }
 
-      const uploadStatus = document.getElementById('uploadStatus');
-      uploadStatus.classList.remove('hidden');
-      uploadStatus.innerText = 'Requesting upload link...';
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<span class="spinner"></span> Uploading...';
 
       try {
-        // 1️⃣ Request presigned URL from Flask backend
+        // Use FormData for local upload
+        const formData = new FormData();
+        formData.append("file", file);
+
         const res = await fetch(`${backendUrl}/upload`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: file.name, filetype: file.type })
+          body: formData
         });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Upload failed with status ${res.status}`);
+        }
+
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Upload URL failed');
+        generatedCode = data.code;         // store code
+        generatedFilename = data.filename; // store filename
 
-        // 2️⃣ Upload file to S3 using presigned URL
-        await fetch(data.upload_url, { method: 'PUT', body: file });
-        
-        generatedCode = data.code;
-        uploadStatus.innerText = 'Upload successful!';
-
-        // 3️⃣ Show share section and QR code
-        showShareSection(generatedCode);
+        showStatus('uploadStatus', 'Upload successful!', 'success');
+        showShareSection(data.code);       // ✅ pass code, not url
 
       } catch (err) {
-        console.error(err);
-        uploadStatus.innerText = 'Upload failed: ' + err.message;
+        console.error('Upload error:', err);
+        showStatus('uploadStatus', 'Upload failed: ' + err.message, 'error');
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = 'Upload & Generate Code';
       }
+    }
+
+    // ---------------- Helper function to show status messages ----------------
+    function showStatus(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      element.innerText = message;
+      element.className = `status ${type}`;
+      element.classList.remove('hidden');
     }
 
     // ---------------- Share Section & QR ----------------
@@ -881,58 +822,497 @@
 
       const img = document.createElement('img');
       img.src = `${backendUrl}/get_qr/${code}`;
-      img.alt = "QR Code";
+      img.alt = "QR Code for file sharing";
       img.width = 80;
       img.height = 80;
+      img.loading = "lazy";
       qrContainer.appendChild(img);
     }
 
     // ---------------- Copy Code ----------------
     function copyCode() {
-      if (!generatedCode) return alert('No code yet');
-      navigator.clipboard.writeText(generatedCode);
-      alert('Code copied: ' + generatedCode);
+      if (!generatedCode) {
+        alert('No code to copy yet. Please upload a file first.');
+        return;
+      }
+      
+      navigator.clipboard.writeText(generatedCode).then(() => {
+        showStatus('uploadStatus', 'Code copied to clipboard!', 'success');
+      }).catch(err => {
+        console.error('Failed to copy code:', err);
+        alert('Failed to copy code. Please try again.');
+      });
     }
 
     // ---------------- Share Link ----------------
     function shareLink() {
-      if (!generatedCode) return alert('No code to share');
-      const url = `${backendUrl}/download/${generatedCode}`;
+      if (!generatedCode || !generatedFilename) {
+        alert('No file to share yet. Please upload a file first.');
+        return;
+      }
+      
+      const url = `${backendUrl}/download/${generatedFilename}`;
+      const shareData = {
+        title: 'YCloud File',
+        text: `Download my file using code ${generatedCode}`,
+        url: url
+      };
+      
       if (navigator.share) {
-        navigator.share({ title: 'YCloud File', text: `Download using code ${generatedCode}`, url })
-          .catch(() => navigator.clipboard.writeText(url));
+        navigator.share(shareData)
+          .catch(err => {
+            console.log('Sharing failed, falling back to clipboard', err);
+            copyToClipboard(url, 'Link copied to clipboard');
+          });
       } else {
-        navigator.clipboard.writeText(url);
-        alert('Link copied to clipboard');
+        copyToClipboard(url, 'Link copied to clipboard');
       }
     }
 
-    // ---------------- Download File ----------------
-    function downloadFile() {
-      const code = (document.getElementById('fileCode').value || '').trim();
-      if (!code) return alert('Please enter code');
-
-      const status = document.getElementById('downloadStatus');
-      status.classList.remove('hidden');
-      status.innerText = 'Resolving download...';
-
-      // Redirect to backend download route
-      window.location.href = `${backendUrl}/download/${code}`;
+    // ---------------- Helper function to copy to clipboard ----------------
+    function copyToClipboard(text, successMessage) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert(successMessage);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy. Please try again.');
+      });
     }
+
+    // ---------------- Download File ----------------
+    async function downloadFile() {
+      const code = (document.getElementById('fileCode').value || '').trim();
+      if (!code) {
+        showStatus('downloadStatus', 'Please enter a download code', 'error');
+        return;
+      }
+
+      showStatus('downloadStatus', 'Checking file...', 'info');
+
+      try {
+        // Check with backend for the file matching this code
+        const res = await fetch(`${backendUrl}/check_file/${code}`);
+        if (!res.ok) throw new Error('Invalid code or file not found');
+
+        const data = await res.json();
+
+        // Redirect to the actual download URL
+        window.location.href = `${backendUrl}/download/${data.filename}`;
+
+      } catch (err) {
+        console.error('Download error:', err);
+        showStatus('downloadStatus', err.message || 'Download failed', 'error');
+      }
+    }
+
+    // ---------------- YCloud Spark ----------------
+    async function generateSparkContent() {
+        const fileInput = document.getElementById('sparkFileInput');
+        const textInput = document.getElementById('sparkTextInput');
+        const button = document.getElementById('sparkGenerateBtn');
+        const progress = document.getElementById('sparkProgress');
+        const resultContainer = document.getElementById('sparkResultContainer');
+        const outputDiv = document.getElementById('sparkOutput');
+
+        const file = fileInput.files[0];
+        const text = textInput.value.trim();
+
+        if (!file && !text) {
+            showStatus('sparkProgress', 'Please upload a file or paste some text.', 'error');
+            return;
+        }
+
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner"></span> Generating...';
+        resultContainer.classList.add('hidden');
+        showStatus('sparkProgress', 'Analyzing your document... this may take a moment.', 'info');
+
+        await new Promise(resolve => setTimeout(resolve, 2500)); 
+
+        try {
+            const mockData = {
+                summary: "This is a brief summary of the document. It highlights the key points, main arguments, and overall conclusion, providing a quick overview for the reader.",
+                qa: [
+                    { q: "What is the main topic of the document?", a: "The main topic revolves around AI-powered productivity tools." },
+                    { q: "What are the key benefits mentioned?", a: "The key benefits include increased efficiency, automated content generation, and better data analysis." }
+                ],
+                quiz: [
+                    { q: "Which tool is best for summarizing text?", options: ["Mindmap", "Spark", "OCR"], answer: "Spark" },
+                    { q: "What input types does Spark accept?", options: ["PDF only", "Text only", "PDF and Text"], answer: "PDF and Text" }
+                ],
+                flashcards: [
+                    { term: "OCR", definition: "Optical Character Recognition. A technology to extract text from images." },
+                    { term: "Mindmap", definition: "A diagram used to visually organize information." }
+                ]
+            };
+
+            progress.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            displaySparkOutput('summary', mockData); 
+
+            document.querySelectorAll('[data-spark-tab]').forEach(tab => {
+                tab.onclick = () => {
+                    document.querySelectorAll('[data-spark-tab]').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    displaySparkOutput(tab.dataset.sparkTab, mockData);
+                };
+            });
+
+        } catch (err) {
+            showStatus('sparkProgress', `An error occurred: ${err.message}`, 'error');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = 'Generate Insights';
+        }
+    }
+
+    function displaySparkOutput(tab, data) {
+        const outputDiv = document.getElementById('sparkOutput');
+        let html = '';
+        switch (tab) {
+            case 'summary':
+                html = `<h5>Summary</h5><p>${data.summary}</p>`;
+                break;
+            case 'qa':
+                html = '<h5>Questions & Answers</h5>';
+                data.qa.forEach(item => {
+                    html += `<div class="mb-3"><p class="muted mb-1"><strong>Q:</strong> ${item.q}</p><p><strong>A:</strong> ${item.a}</p></div>`;
+                });
+                break;
+            case 'quiz':
+                html = '<h5>Multiple-Choice Quiz</h5>';
+                data.quiz.forEach((item, index) => {
+                    const optionsHtml = item.options.map(opt => `<li>${opt}</li>`).join('');
+                    html += `<div class="mb-3"><p><strong>${index + 1}.</strong> ${item.q}</p><ul style="list-style-position: inside; padding-left: 0;">${optionsHtml}</ul><p><small class="muted">Correct Answer: ${item.answer}</small></p></div>`;
+                });
+                break;
+            case 'flashcards':
+                html = '<h5>Flashcards</h5><div class="cards" style="grid-template-columns: 1fr 1fr; gap: 15px;">';
+                data.flashcards.forEach(card => {
+                    html += `<div class="card" style="padding: var(--sp-3);"><h5 class="muted">${card.term}</h5><hr class="hr"><p>${card.definition}</p></div>`;
+                });
+                html += '</div>';
+                break;
+        }
+        outputDiv.innerHTML = html;
+    }
+
+    // ---------------- YCloud Mindmap ----------------
+   async function generateMindmap() {
+    const fileInput = document.getElementById('mindmapFileInput');
+    const textInput = document.getElementById('mindmapTextInput');
+    const button = document.getElementById('mindmapGenerateBtn');
+    const progress = document.getElementById('mindmapProgress');
+    const resultContainer = document.getElementById('mindmapResultContainer');
+    const outputDiv = document.getElementById('mindmapOutput');
+
+    const file = fileInput.files[0];
+    const text = textInput.value.trim();
+
+    if (!file && !text) {
+        showStatus('mindmapProgress', 'Please upload a file or paste some text.', 'error');
+        return;
+    }
+
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner"></span> Generating...';
+    resultContainer.classList.add('hidden');
+    showStatus('mindmapProgress', 'Creating your mindmap... this can take a moment.', 'info');
+
+    try {
+        const formData = new FormData();
+        if (file) formData.append("file", file);
+        if (text) formData.append("text", text);
+
+        const res = await fetch(`${backendUrl}/ai/mindmap`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `Request failed: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.mindmap_code) {
+            // Render Mermaid mindmap
+            outputDiv.innerHTML = `<pre class="mermaid">${data.mindmap_code}</pre>`;
+            mermaid.init(undefined, outputDiv.querySelectorAll(".mermaid"));
+        } else {
+            outputDiv.innerHTML = `<p class="error">No mindmap code received</p>`;
+        }
+
+        progress.classList.add('hidden');
+        resultContainer.classList.remove('hidden');
+
+    } catch (err) {
+        console.error("Mindmap error:", err);
+        showStatus('mindmapProgress', `An error occurred: ${err.message}`, 'error');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = 'Generate Mindmap';
+    }
+}
+ //  Ycloud resume analayzer //
+
+ document.addEventListener("DOMContentLoaded", () => {
+
+  // --- Show status messages safely ---
+  function showStatus(message, type = 'info') {
+    const statusDiv = document.getElementById('resume-status');
+    if(!statusDiv) return; // Avoid null errors
+    statusDiv.textContent = message;
+    statusDiv.className = `status ${type} mt-2`;
+    statusDiv.style.display = 'block';
+  }
+
+  // --- Hide status ---
+  function hideStatus() {
+    const statusDiv = document.getElementById('resume-status');
+    if(statusDiv) statusDiv.style.display = 'none';
+  }
+
+  // --- Main Resume Analyzer function ---
+  async function analyzeResume() {
+    const fileInput = document.getElementById('resume-file');
+    const roleSelect = document.getElementById('role');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const resultDiv = document.getElementById('resume-result');
+    const scoreSpan = document.getElementById('score');
+    const matchedSpan = document.getElementById('matched');
+    const missingSpan = document.getElementById('missing');
+    const feedbackArea = document.getElementById('feedback');
+
+    if (!fileInput.files.length) {
+      showStatus('Please upload a resume file.', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('role', roleSelect.value);
+
+    // --- UI Updates ---
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
+    resultDiv.classList.add('hidden');
+    showStatus('Analyzing your resume, please wait...', 'info');
+
+    try {
+      const response = await axios.post('/ai/resume_builder', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const data = response.data;
+
+      // Update results
+      scoreSpan.textContent = data.resume_score ?? 'N/A';
+      matchedSpan.textContent = (data.matched_skills || []).join(', ');
+      missingSpan.textContent = (data.missing_skills || []).join(', ');
+      feedbackArea.value = data.ai_feedback ?? '';
+
+      resultDiv.classList.remove('hidden');
+      showStatus('✅ Resume analysis complete!', 'success');
+
+    } catch (error) {
+      console.error(error);
+      showStatus('❌ Error analyzing resume. Please try again.', 'error');
+    } finally {
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = 'Analyze Resume';
+    }
+  }
+
+  // --- Attach click event safely ---
+  const analyzeBtn = document.getElementById('analyze-btn');
+  if(analyzeBtn) analyzeBtn.addEventListener('click', analyzeResume);
+
+});
+
+
+  // --- Voice to Document Feature ---
+
+// --- Global Variables for Voice Feature ---
+let mediaRecorder;
+let audioChunks = [];
+let recognition;
+let finalTranscript = "";
+
+// --- DOM Element Selection ---
+const startRecordingBtn = document.getElementById("startRecordingBtn");
+const stopRecordingBtn = document.getElementById("stopRecordingBtn");
+const downloadPdfBtn = document.getElementById("downloadPdfBtn"); // Correct ID
+const downloadDocxBtn = document.getElementById("downloadDocxBtn"); // Correct ID
+const voiceText = document.getElementById("voiceText");
+const downloadLinks = document.getElementById("downloadLinks");
+const voiceStatus = document.getElementById("voiceStatus");
+
+// --- Setup Speech Recognition (Browser-based) ---
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  // Update textarea with live transcription
+  recognition.onresult = event => {
+    let interimTranscript = "";
+    finalTranscript = ""; // Reset final transcript to rebuild it
+    for (let i = 0; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalTranscript += transcript + ' ';
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+    voiceText.value = finalTranscript + interimTranscript;
+  };
+  
+  recognition.onerror = e => console.error("Speech recognition error:", e);
+} else {
+    console.warn("Speech Recognition not supported in this browser. Transcription will be done by the backend only.");
+}
+
+// --- Event Handlers ---
+
+// Start Recording
+startRecordingBtn.onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    // Reset state
+    finalTranscript = "";
+    voiceText.value = "";
+    downloadLinks.innerHTML = "";
+    audioChunks = [];
+    voiceStatus.classList.add('hidden');
+
+    // Setup MediaRecorder
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+        // Stop all audio tracks to turn off the recording indicator
+        stream.getTracks().forEach(track => track.stop());
+    };
+    
+    // Start recording and recognition
+    mediaRecorder.start();
+    if (recognition) recognition.start();
+
+    // Update UI
+    voiceStatus.textContent = "🔴 Recording...";
+    voiceStatus.classList.remove('hidden');
+    startRecordingBtn.disabled = true;
+    stopRecordingBtn.disabled = false;
+    downloadPdfBtn.disabled = true;
+    downloadDocxBtn.disabled = true;
+
+  } catch (err) {
+    console.error("Error starting recording:", err);
+    alert("Could not start recording. Please ensure you have given microphone permissions.");
+  }
+};
+
+// Stop Recording
+stopRecordingBtn.onclick = () => {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+  }
+  if (recognition) {
+    recognition.stop();
+  }
+  
+  // Update UI
+  voiceStatus.textContent = "Recording stopped. Ready to generate document.";
+  startRecordingBtn.disabled = false;
+  stopRecordingBtn.disabled = true;
+  downloadPdfBtn.disabled = false;
+  downloadDocxBtn.disabled = false;
+};
+
+// Attach upload function to download buttons
+downloadPdfBtn.onclick = () => uploadAndSave("pdf");
+downloadDocxBtn.onclick = () => uploadAndSave("docx");
+
+// --- Upload and Generate Document Function ---
+async function uploadAndSave(format) {
+  if (audioChunks.length === 0) {
+    alert("No recording available to process.");
+    return;
+  }
+
+  const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+  const file = new File([audioBlob], "voice_recording.webm", { type: "audio/webm" });
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("format", format);
+
+  // Update UI to show processing state
+  const btn = format === "pdf" ? downloadPdfBtn : downloadDocxBtn;
+  const originalBtnText = btn.textContent;
+  btn.disabled = true;
+  downloadLinks.innerHTML = '';
+  voiceStatus.textContent = `Processing and generating your ${format.toUpperCase()}...`;
+
+  try {
+    const response = await fetch(`${backendUrl}/ai/voice_to_document`, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Server responded with an error.");
+    }
+
+    const data = await response.json();
+    
+    // If backend provides transcribed text, update the textarea
+    if(data.text) {
+        voiceText.value = data.text;
+    }
+
+    // Display the download link
+    downloadLinks.innerHTML = `<a href="${backendUrl}${data.download_url}" class="btn secondary" download>Download ${format.toUpperCase()}</a>`;
+    voiceStatus.textContent = "Your document is ready!";
+
+  } catch (err) {
+    console.error(err);
+    voiceStatus.textContent = `Error: ${err.message}`;
+    alert("Failed to generate document. Please try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalBtnText;
+  }
+}
+
+
 
     // ---------------- Document Tool Functions ----------------
     async function convertPdfToWord() {
       const fileInput = document.getElementById('pdfToWordInput');
+      const button = document.getElementById('pdfToWordBtn');
       const progress = document.getElementById('docToolProgress');
       const result = document.getElementById('docToolResult');
 
-      if (!fileInput.files.length) return alert('Please select a PDF file first');
+      if (!fileInput.files.length) {
+        showStatus('docToolProgress', 'Please select a PDF file first', 'error');
+        return;
+      }
 
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
 
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span> Converting...';
       progress.classList.remove('hidden');
       progress.textContent = 'Converting PDF to Word...';
+      result.classList.add('hidden');
       
       try {
         const res = await fetch(`${backendUrl}/doc/pdf_to_word`, {
@@ -940,30 +1320,40 @@
           body: formData
         });
 
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Conversion failed with status ${res.status}`);
+        }
+
         const data = await res.json();
         if (data.download_url) {
           result.innerHTML = `
-            <p>Conversion complete!</p>
+            <p class="success">Conversion complete!</p>
             <a href="${data.download_url}" target="_blank" class="btn">Download Word Document</a>
           `;
         } else {
-          result.innerHTML = `<p class="error">Conversion failed!</p>`;
+          result.innerHTML = `<p class="error">Conversion failed - no download URL received</p>`;
         }
       } catch (err) {
+        console.error('PDF to Word conversion error:', err);
         result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      } finally {
+        result.classList.remove('hidden');
+        progress.classList.add('hidden');
+        button.disabled = false;
+        button.innerHTML = 'Convert to Word';
       }
-
-      result.classList.remove('hidden');
-      progress.classList.add('hidden');
     }
 
     async function mergePdfs() {
       const fileInput = document.getElementById('mergePdfsInput');
+      const button = document.getElementById('mergePdfsBtn');
       const progress = document.getElementById('docToolProgress');
       const result = document.getElementById('docToolResult');
 
       if (!fileInput.files.length || fileInput.files.length < 2) {
-        return alert('Please select at least 2 PDF files to merge');
+        showStatus('docToolProgress', 'Please select at least 2 PDF files to merge', 'error');
+        return;
       }
 
       const formData = new FormData();
@@ -971,8 +1361,11 @@
         formData.append("files", f);
       }
 
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span> Merging...';
       progress.classList.remove('hidden');
       progress.textContent = 'Merging PDF files...';
+      result.classList.add('hidden');
 
       try {
         const res = await fetch(`${backendUrl}/doc/merge_pdfs`, {
@@ -980,35 +1373,50 @@
           body: formData
         });
 
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Merge failed with status ${res.status}`);
+        }
+
         const data = await res.json();
         if (data.download_url) {
           result.innerHTML = `
-            <p>Merged PDFs successfully!</p>
+            <p class="success">Merged PDFs successfully!</p>
             <a href="${data.download_url}" target="_blank" class="btn">Download Merged PDF</a>
           `;
         } else {
-          result.innerHTML = `<p class="error">Merge failed!</p>`;
+          result.innerHTML = `<p class="error">Merge failed - no download URL received</p>`;
         }
       } catch (err) {
+        console.error('PDF merge error:', err);
         result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      } finally {
+        result.classList.remove('hidden');
+        progress.classList.add('hidden');
+        button.disabled = false;
+        button.innerHTML = 'Merge PDFs';
       }
-
-      result.classList.remove('hidden');
-      progress.classList.add('hidden');
     }
 
     async function convertWordToPdf() {
       const fileInput = document.getElementById('wordToPdfInput');
+      const button = document.getElementById('wordToPdfBtn');
       const progress = document.getElementById('docToolProgress');
       const result = document.getElementById('docToolResult');
 
-      if (!fileInput.files.length) return alert('Please select a Word document first');
+      if (!fileInput.files.length) {
+        showStatus('docToolProgress', 'Please select a Word document first', 'error');
+        return;
+      }
 
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
 
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span> Converting...';
       progress.classList.remove('hidden');
       progress.textContent = 'Converting Word to PDF...';
+      result.classList.add('hidden');
 
       try {
         const res = await fetch(`${backendUrl}/doc/word_to_pdf`, {
@@ -1016,35 +1424,52 @@
           body: formData
         });
 
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Conversion failed with status ${res.status}`);
+        }
+
         const data = await res.json();
         if (data.download_url) {
           result.innerHTML = `
-            <p>Conversion complete!</p>
+            <p class="success">Conversion complete!</p>
             <a href="${data.download_url}" target="_blank" class="btn">Download PDF</a>
           `;
         } else {
-          result.innerHTML = `<p class="error">Conversion failed!</p>`;
+          result.innerHTML = `<p class="error">Conversion failed - no download URL received</p>`;
         }
       } catch (err) {
+        console.error('Word to PDF conversion error:', err);
         result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      } finally {
+        result.classList.remove('hidden');
+        progress.classList.add('hidden');
+        button.disabled = false;
+        button.innerHTML = 'Convert to PDF';
       }
-      
-      result.classList.remove('hidden');
-      progress.classList.add('hidden');
     }
 
     async function convertPdfToImages() {
       const fileInput = document.getElementById('pdfToImagesInput');
+      const formatSelect = document.getElementById('imageFormat');
+      const button = document.getElementById('pdfToImagesBtn');
       const progress = document.getElementById('docToolProgress');
       const result = document.getElementById('docToolResult');
 
-      if (!fileInput.files.length) return alert('Please select a PDF file first');
+      if (!fileInput.files.length) {
+        showStatus('docToolProgress', 'Please select a PDF file first', 'error');
+        return;
+      }
 
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
+      formData.append("format", formatSelect.value);
 
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span> Converting...';
       progress.classList.remove('hidden');
       progress.textContent = 'Converting PDF to Images...';
+      result.classList.add('hidden');
 
       try {
         const res = await fetch(`${backendUrl}/doc/pdf_to_images`, {
@@ -1052,81 +1477,122 @@
           body: formData
         });
 
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Conversion failed with status ${res.status}`);
+        }
+
         const data = await res.json();
         if (data.download_urls && data.download_urls.length > 0) {
           let links = data.download_urls.map((url, i) =>
             `<li><a href="${url}" target="_blank">Download Page ${i+1}</a></li>`
           ).join("");
           result.innerHTML = `
-            <p>Converted PDF to images successfully!</p>
+            <p class="success">Converted PDF to images successfully!</p>
+            <p>Download individual pages:</p>
             <ul>${links}</ul>
+            <button class="btn mt-2" onclick="downloadAllImages(${JSON.stringify(data.download_urls)})">Download All as ZIP</button>
           `;
         } else {
-          result.innerHTML = `<p class="error">Conversion failed!</p>`;
+          result.innerHTML = `<p class="error">Conversion failed - no images received</p>`;
         }
       } catch (err) {
+        console.error('PDF to images conversion error:', err);
         result.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+      } finally {
+        result.classList.remove('hidden');
+        progress.classList.add('hidden');
+        button.disabled = false;
+        button.innerHTML = 'Convert to Images';
       }
-
-      result.classList.remove('hidden');
-      progress.classList.add('hidden');
     }
 
     // ---------------- OCR Functionality ----------------
     async function performOCR() {
-  const fileInput = document.getElementById('ocrImageInput');
-  const resultDiv = document.getElementById('ocrResult');
-  const progressDiv = document.getElementById('ocrProgress');
-  const extractedText = document.getElementById('extractedText');
+      const fileInput = document.getElementById('ocrImageInput');
+      const button = document.getElementById('ocrBtn');
+      const resultDiv = document.getElementById('ocrResult');
+      const progressDiv = document.getElementById('ocrProgress');
+      const extractedText = document.getElementById('extractedText');
 
-  if (!fileInput.files.length) {
-    return alert('Please select an image first');
-  }
-
-  progressDiv.classList.remove('hidden');
-  resultDiv.classList.add('hidden');
-  extractedText.textContent = '';
-
-  try {
-    const file = fileInput.files[0];
-    console.log('[OCR] Processing file:', file.name);
-
-    const { data: { text } } = await Tesseract.recognize(file, 'eng', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          progressDiv.textContent = `Processing... ${Math.round(m.progress * 100)}%`;
-        }
+      if (!fileInput.files.length) {
+        showStatus('ocrProgress', 'Please select an image first', 'error');
+        return;
       }
-    });
 
-    console.log('[OCR] Extracted text:', text);
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span> Processing...';
+      progressDiv.classList.remove('hidden');
+      progressDiv.textContent = 'Initializing OCR engine...';
+      resultDiv.classList.add('hidden');
+      extractedText.textContent = '';
 
-    extractedText.textContent = text.trim() === "" 
-      ? "OCR completed, but no text was found in the image." 
-      : text;
+      try {
+        const file = fileInput.files[0];
+        console.log('[OCR] Processing file:', file.name);
 
-    resultDiv.classList.remove('hidden');
-  } catch (error) {
-    console.error("OCR Error:", error);
-    alert("OCR failed. See console for details.");
-  } finally {
-    progressDiv.classList.add('hidden');
-  }
-}
+        const { data: { text } } = await Tesseract.recognize(file, 'eng', {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              progressDiv.textContent = `Processing... ${Math.round(m.progress * 100)}%`;
+            }
+          }
+        });
+
+        console.log('[OCR] Extracted text:', text);
+        currentOcrText = text.trim();
+
+        extractedText.textContent = currentOcrText === "" 
+          ? "OCR completed, but no text was found in the image." 
+          : currentOcrText;
+
+        resultDiv.classList.remove('hidden');
+        progressDiv.textContent = 'OCR completed successfully!';
+        
+      } catch (error) {
+        console.error("OCR Error:", error);
+        progressDiv.textContent = `OCR failed: ${error.message}`;
+        progressDiv.className = 'status error';
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'Extract Text';
+      }
+    }
+
+    function copyOcrText() {
+      if (!currentOcrText) {
+        alert('No text to copy. Please extract text from an image first.');
+        return;
+      }
+      
+      navigator.clipboard.writeText(currentOcrText).then(() => {
+        alert('Text copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy text:', err);
+        alert('Failed to copy text. Please try again.');
+      });
+    }
 
     // ---------------- Image Resizer Functionality ----------------
     async function resizeImage() {
       const fileInput = document.getElementById('resizeImageInput');
       const widthInput = document.getElementById('resizeWidth');
       const heightInput = document.getElementById('resizeHeight');
+      const button = document.getElementById('resizeBtn');
       const resultDiv = document.getElementById('resizeResult');
 
-      if (!fileInput.files.length) return alert('Please select an image first');
+      if (!fileInput.files.length) {
+        showStatus('resizeResult', 'Please select an image first', 'error');
+        return;
+      }
 
       const width = parseInt(widthInput.value);
       const height = parseInt(heightInput.value);
 
-      if (!width || !height || width <= 0 || height <= 0) return alert('Please enter valid width and height values');
+      if (!width || !height || width <= 0 || height <= 0) {
+        showStatus('resizeResult', 'Please enter valid width and height values', 'error');
+        return;
+      }
 
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
@@ -1135,28 +1601,44 @@
       
       console.log('[Resize] Sending file to backend:', fileInput.files[0].name, 'Width:', width, 'Height:', height);
 
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span> Resizing...';
+      resultDiv.classList.add('hidden');
+
       try {
-        const res = await fetch(`${backendUrl}/img/resize`, { method: "POST", body: formData });
+        const res = await fetch(`${backendUrl}/img/resize`, { 
+          method: "POST", 
+          body: formData 
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Resize failed with status ${res.status}`);
+        }
+
         const data = await res.json();
 
         if (data.download_url) {
           resultDiv.innerHTML = `
-            <p>Resized Image (${width} × ${height} px)</p>
+            <p class="success">Resized Image (${width} × ${height} px)</p>
             <a href="${data.download_url}" target="_blank" class="btn">Download Resized Image</a>
           `;
-          resultDiv.classList.remove('hidden');
-        } else alert(data.error || "Resize failed");
+        } else {
+          resultDiv.innerHTML = `<p class="error">Resize failed - no download URL received</p>`;
+        }
       } catch (error) {
         console.error("Resize Error:", error);
-        alert("Resize request failed. See console for details.");
+        resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      } finally {
+        resultDiv.classList.remove('hidden');
+        button.disabled = false;
+        button.innerHTML = 'Resize';
       }
     }
 
     // ---------------- Quick Route Navigation ----------------
     function go(path) {
-      if (path === '/img/ocr') openOCRModal();
-      else if (path === '/img/resize') openImageResizer();
-      else alert('This tool would open at: ' + path);
+      alert('This tool would open at: ' + path);
     }
 
     // ---------------- Accent Color Shuffler ----------------
@@ -1182,10 +1664,24 @@
         document.getElementById('fileCode').value = code;
       }
 
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const openModals = document.querySelectorAll('.modal-overlay:not(.hidden)');
+          if (openModals.length > 0) {
+            const modalId = openModals[0].id;
+            closeModal(modalId);
+          }
+        }
+      });
+
       console.log("YCloud Dashboard initialized");
     }
 
-    init();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
