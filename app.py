@@ -53,6 +53,10 @@ try:
     print("✅ Google Generative AI configured successfully!")
 except Exception as e:
     print(f"❌ Error configuring Google Generative AI: {e}")
+print("Models available to your API key:")
+for m in genai.list_models():
+    if 'generateContent' in m.supported_generation_methods:
+        print(m.name)
 
 
 def generate_code(length=6):
@@ -476,7 +480,7 @@ def image_ocr_route():
 def ask_Ycloudai(prompt, max_tokens=2048):
     """Sends a prompt to the Gemini model and returns the response."""
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-flash-latest')
         generation_config = genai.types.GenerationConfig(max_output_tokens=max_tokens)
         response = model.generate_content(prompt, generation_config={"max_output_tokens": max_tokens})
         return response.text.strip()
@@ -713,7 +717,7 @@ def gemini_feedback(resume_text: str, role: str, matched: list, missing: list, s
 
     # CORRECTED LINE: Use the modern way to get a model.
     # 'gemini-1.5-flash-latest' is recommended for speed and low cost.
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    model = genai.GenerativeModel('gemini-flash-latest')
 
     # This line is already correct for the new model object.
     response = model.generate_content(prompt)
@@ -754,7 +758,7 @@ def ask_Ycloudai_audio(audio_path, prompt="Transcribe this audio file accurately
     Sends an audio file to YCloud AI (Gemini) for transcription and returns the text.
     """
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel('gemini-flash-latest')
 
         # Open audio file as bytes
         with open(audio_path, "rb") as f:
@@ -782,16 +786,24 @@ def voice_to_document():
         return jsonify({"error": "No file selected"}), 400
 
     format_type = request.form.get("format", "pdf")
-    temp_path = None
+    temp_path_webm = None
+    temp_path_wav = None
+
 
     try:
         # 1️⃣ Save audio temporarily
-        temp_filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
-        temp_path = os.path.join(UPLOAD_FOLDER, temp_filename)
-        file.save(temp_path)
+        temp_filename_webm = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
+        temp_path_webm = os.path.join(UPLOAD_FOLDER, temp_filename_webm)
+        file.save(temp_path_webm)
+
+
+        temp_filename_wav = temp_path_webm.replace('.webm','.wav')
+        temp_path_wav = os.path.join(UPLOAD_FOLDER,temp_filename_wav)
+
+        subprocess.run(['ffmpeg', '-i', temp_path_webm, temp_path_wav], check=True)
 
         # 2️⃣ Send audio to YCloud AI for transcription
-        text_output = ask_Ycloudai_audio(temp_path)
+        text_output = ask_Ycloudai_audio(temp_path_wav)
         if not text_output:
             return jsonify({"error": "AI transcription failed"}), 500
 
@@ -824,8 +836,11 @@ def voice_to_document():
         return jsonify({"error": f"Transcription failed: {str(e)}"}), 500
 
     finally:
-        if temp_path and os.path.exists(temp_path):
-            os.remove(temp_path)
+        
+        if temp_path_webm and os.path.exists(temp_path_webm):
+            os.remove(temp_path_webm)
+        if temp_path_wav and os.path.exists(temp_path_wav):
+            os.remove(temp_path_wav)
 
 
 

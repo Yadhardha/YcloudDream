@@ -305,11 +305,7 @@
           <div class="qr-container" id="qrCode" aria-label="QR code for file sharing"></div>
           <div>
             <div class="muted">Share Code</div>
-            <div id="shareCode" class="mt-1" style="font-weight:700; font-size:18px;"></div>
-            <div class="flex gap-2 mt-2">
-              <button class="btn ghost" onclick="copyCode()">Copy Code</button>
-              <button class="btn ghost" onclick="shareLink()">Share Link</button>
-            </div>
+            <div id="shareCode" class="mt-1" style="font-weight:700; font-size:18px; color: var(--brand)"></div>
           </div>
         </div>
 
@@ -870,55 +866,10 @@ function showStatus(id, msg, type='info') {
       qrContainer.appendChild(img);
     }
 
-    // ---------------- Copy Code ----------------
-    function copyCode() {
-      if (!generatedCode) {
-        alert('No code to copy yet. Please upload a file first.');
-        return;
-      }
-      
-      navigator.clipboard.writeText(generatedCode).then(() => {
-        showStatus('uploadStatus', 'Code copied to clipboard!', 'success');
-      }).catch(err => {
-        console.error('Failed to copy code:', err);
-        alert('Failed to copy code. Please try again.');
-      });
-    }
+  
 
-    // ---------------- Share Link ----------------
-    function shareLink() {
-      if (!generatedCode || !generatedFilename) {
-        alert('No file to share yet. Please upload a file first.');
-        return;
-      }
-      
-      const url = `${backendUrl}/download/${generatedFilename}`;
-      const shareData = {
-        title: 'YCloud File',
-        text: `Download my file using code ${generatedCode}`,
-        url: url
-      };
-      
-      if (navigator.share) {
-        navigator.share(shareData)
-          .catch(err => {
-            console.log('Sharing failed, falling back to clipboard', err);
-            copyToClipboard(url, 'Link copied to clipboard');
-          });
-      } else {
-        copyToClipboard(url, 'Link copied to clipboard');
-      }
-    }
-
-    // ---------------- Helper function to copy to clipboard ----------------
-    function copyToClipboard(text, successMessage) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert(successMessage);
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Failed to copy. Please try again.');
-      });
-    }
+    
+  
 
     // ---------------- Download File ----------------
     async function downloadFile() {
@@ -1073,7 +1024,7 @@ async function generateMindmap() {
         if (text) formData.append('text', text);
 
         // Send request to backend
-        const response = await axios.post(`${backendUrl}/generate_mindmap`, formData, {
+        const response = await axios.post(`${backendUrl}/ai/mindmap`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
 
@@ -1264,7 +1215,7 @@ async function uploadAndSave(format) {
     voiceStatus.textContent = `Processing and generating your ${format.toUpperCase()}...`;
 
     try {
-        const response = await fetch(`${backendUrl}/ai/voice_to_document`, { method: "POST", body: formData });
+        const response = await fetch(`${backendUrl}ai/voice_to_document`, { method: "POST", body: formData });
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.error || "Server responded with an error.");
