@@ -21,14 +21,26 @@ import cv2
 import numpy as np
 from google.generativeai import GenerativeModel
 import re
-from fpdf import FPDF
+from fpdf import FPDF # type: ignore
 import uuid
+from PIL import Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
+import pdfplumber
+from docx import Document
+import pytesseract
+from pdf2image import convert_from_bytes
+import fitz
 
 
 # ----------------------- App Setup -----------------------
 app = Flask(__name__)
 CORS(app)
 app.config['MAX_CONTENT_LENGTH'] = 512 * 1024 * 1024  # 512 MB
+app.config["PROPAGATE_EXCEPTIONS"] = True
+app.config["DEBUG"] = True
+
 
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "outputs"
@@ -53,10 +65,6 @@ try:
     print("✅ Google Generative AI configured successfully!")
 except Exception as e:
     print(f"❌ Error configuring Google Generative AI: {e}")
-print("Models available to your API key:")
-for m in genai.list_models():
-    if 'generateContent' in m.supported_generation_methods:
-        print(m.name)
 
 
 def generate_code(length=6):
@@ -153,7 +161,8 @@ def get_qr(code):
     if not filename:
         return jsonify({"error": "File not found"}), 404
     
-    download_url = f"{request.url_root}download/{filename}"
+    PUBLIC_URL = os.getenv("PUBLIC_BACKEND_URL")
+    download_url = f"{PUBLIC_URL}/download/{filename}"
     
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(download_url)
@@ -222,68 +231,83 @@ def extract(file_like):
 
 def pdf_to_word_bytes(pdf_bytes):
     try:
-        reader = PdfReader(io.BytesIO(pdf_bytes))
         doc = Document()
-        for i, page in enumerate(reader.pages):
-            text = page.extract_text()
-            if text:
+
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            for i, page in enumerate(pdf.pages):
+                text = page.extract_text()
+
+                # OCR fallback
+                if not text or text.strip() == "":
+                    images = convert_from_bytes(pdf_bytes, first_page=i+1, last_page=i+1)
+                    for img in images:
+                        text = pytesseract.image_to_string(img)
+
                 doc.add_paragraph(f"--- Page {i + 1} ---")
-                doc.add_paragraph(text)
-        f = io.BytesIO()
-        doc.save(f)
-        f.seek(0)
-        return f.getvalue()
+                doc.add_paragraph(text if text else "")
+
+        buffer = io.BytesIO()
+        doc.save(buffer)
+        buffer.seek(0)
+        return buffer.getvalue()
+
     except Exception as e:
-        print(f"PDF to Word conversion error: {e}")
+        print("PDF → Word error:", e)
         return None
+
 
 
 def word_to_pdf_bytes(word_bytes):
     try:
-        doc = Document(io.BytesIO(word_bytes))
-        f = io.BytesIO()
-        c = canvas.Canvas(f)
-        y = 800
-        for para in doc.paragraphs:
+        docx = Document(io.BytesIO(word_bytes))
+
+        buffer = io.BytesIO()
+        pdf = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+
+        for para in docx.paragraphs:
             text = para.text.strip()
             if text:
-                c.drawString(50, y, text)
-                y -= 20
-                if y < 50:
-                    c.showPage()
-                    y = 800
-        c.save()
-        f.seek(0)
-        return f.getvalue()
-    except Exception as e:
-        print(f"Word to PDF conversion error: {e}")
-        return None
+                story.append(Paragraph(text, styles["Normal"]))
 
+        pdf.build(story)
+        buffer.seek(0)
+        return buffer.getvalue()
+
+    except Exception as e:
+        print("Word → PDF error:", e)
+        return None
 
 def image_to_pdf_bytes(image_bytes):
     try:
         img = Image.open(io.BytesIO(image_bytes))
-        if img.mode in ("RGBA", "P"):
-            img = img.convert("RGB")
-        f = io.BytesIO()
-        img.save(f, "PDF")
-        f.seek(0)
-        return f.getvalue()
-    except Exception as e:
-        print(f"Image to PDF conversion error: {e}")
-        return None
 
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+
+        buffer = io.BytesIO()
+        img.save(buffer, "PDF", resolution=300.0)
+        buffer.seek(0)
+        return buffer.getvalue()
+
+    except Exception as e:
+        print("Image → PDF error:", e)
+        return None
+# PyMuPDF
 
 def pdf_to_images_bytes(pdf_bytes):
     try:
-        pages = convert_from_bytes(pdf_bytes, 300)
-        images_bytes = []
-        for i, page in enumerate(pages):
-            buf = io.BytesIO()
-            page.save(buf, format="PNG")
-            buf.seek(0)
-            images_bytes.append(buf.getvalue())
-        return images_bytes
+        pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
+        images = []
+
+        for page_no in range(len(pdf)):
+            page = pdf.load_page(page_no)
+            pix = page.get_pixmap(dpi=300)
+            images.append(pix.tobytes("png"))
+
+        return images
+
     except Exception as e:
         print(f"PDF to images conversion error: {e}")
         return []
@@ -478,43 +502,101 @@ def image_ocr_route():
     return jsonify({"extracted_text": text})
 
 def ask_Ycloudai(prompt, max_tokens=2048):
-    """Sends a prompt to the Gemini model and returns the response."""
     try:
-        model = genai.GenerativeModel('gemini-flash-latest')
-        generation_config = genai.types.GenerationConfig(max_output_tokens=max_tokens)
-        response = model.generate_content(prompt, generation_config={"max_output_tokens": max_tokens})
+        model = genai.GenerativeModel("gemini-2.0-flash")
+
+        response = model.generate_content(
+            prompt,
+            generation_config={"max_output_tokens": max_tokens}
+        )
+
+        # Safety check
+        if not response.candidates or not response.candidates[0].content.parts:
+            return "⚠️ AI blocked the response due to safety filters."
+
         return response.text.strip()
+
     except Exception as e:
-        print(f"Gemini API error: {e}")
-        return "Error: Could not get a response from the AI."
+        print("Gemini API error:", e)
+        return f"⚠️ Error: {str(e)}"
+
+def _mime_from_filename(filename):
+    fn = filename.lower()
+
+    if fn.endswith(".pdf"):
+        return "application/pdf"
+
+    if fn.endswith(".docx"):
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    if fn.endswith(".txt"):
+        return "text/plain"
+
+    if fn.endswith(".png"):
+        return "image/png"
+
+    if fn.endswith(".jpg") or fn.endswith(".jpeg"):
+        return "image/jpeg"
+
+    if fn.endswith(".webm") or fn.endswith(".opus"):
+        return "audio/webm"
+
+
+
+    if fn.endswith(".wav"):
+        return "audio/wav"
+
+    if fn.endswith(".mp3"):
+        return "audio/mpeg"
+
+    # fallback for unknown/extensions
+    return "application/octet-stream"
+
 
 def extract_text_from_file(file):
-    """Extracts text from various file types."""
-    filename = file.filename
-    text = ""
     try:
+        filename = file.filename.lower()
+        file_bytes = file.read()
+
+        print("\n🟦 [TRACE] Extracting file:", filename)
+
+        # -------------------------
+        # 📄 DOCX extraction
+        # -------------------------
+        if filename.endswith(".docx"):
+            print("🟩 [OK] DOCX detected — extracting using python-docx")
+            doc = Document(io.BytesIO(file_bytes))
+            text = "\n".join([p.text for p in doc.paragraphs])
+            return text, None
+
+        # -------------------------
+        # 📄 PDF extraction
+        # -------------------------
         if filename.endswith(".pdf"):
-            reader = PdfReader(file.stream)
-            for page in reader.pages:
-                text += page.extract_text() or ""
-            if not text.strip():  # OCR Fallback
-                file.seek(0)
-                images = convert_from_bytes(file.read())
-                for img in images:
-                    text += pytesseract.image_to_string(img)
-        elif filename.endswith(".docx"):
-            doc = Document(file.stream)
-            text = "\n".join([para.text for para in doc.paragraphs])
-        elif filename.endswith(('.png', '.jpg', '.jpeg')):
-            image = Image.open(file.stream)
-            text = pytesseract.image_to_string(image)
-        elif filename.endswith(".txt"):
-            text = file.stream.read().decode('utf-8')
-        else:
-            return None, f"Unsupported file type: {filename}"
-        return text, None
+            print("🟩 [OK] PDF detected — extracting using pdfplumber")
+            text = ""
+            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n"
+            return text, None
+
+        # -------------------------
+        # 📄 TXT extraction
+        # -------------------------
+        if filename.endswith(".txt"):
+            print("🟩 [OK] TXT detected")
+            return file_bytes.decode("utf-8"), None
+
+        print("🟥 [ERROR] Unsupported file:", filename)
+        return None, "Unsupported file format."
+
     except Exception as e:
-        return None, f"Error processing file {filename}: {e}"
+        print("🟥 [FATAL] Extraction Error:")
+        traceback.print_exc()
+        return None, f"Extract failed: {str(e)}"
+
 
 def chunk_text(text, chunk_size=4000, overlap=200):
     """Splits a long text into smaller, overlapping chunks."""
@@ -529,19 +611,88 @@ def chunk_text(text, chunk_size=4000, overlap=200):
     return chunks
 
 # ----------------------- Ycloud Spark - Document Processor -----------------------
-def generate_summary(text_chunks):
-    summaries = [ask_Ycloudai(f"Summarize this text concisely:\n{c}") for c in text_chunks]
-    return ask_Ycloudai("Combine these summaries into one cohesive summary:\n" + "\n".join(summaries))
+def generate_summary(file_bytes, filename):
+    mime = _mime_from_filename(filename)
 
-def generate_qa(text_chunks, question):
-    answers = [ask_Ycloudai(f"Based ONLY on this text, answer:\nText: {c}\nQuestion: {question}") for c in text_chunks]
-    return ask_Ycloudai(f"Synthesize into a single, clear answer for: '{question}'\nInformation:\n" + "\n".join(answers))
+    prompt = (
+        "Read the attached document fully and generate a detailed structured summary. "
+        "Include an executive summary, key points, sections, bullet points, and important insights."
+    )
 
-def generate_quiz(full_text):
-    return ask_Ycloudai("Generate 5 multiple-choice questions (2 easy, 2 hard, 1 medium) with answers based on this text:\n" + full_text)
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
-def generate_flashcards(full_text):
-    return ask_Ycloudai("Create 5 flashcards with Q & A based on this text:\n" + full_text)
+    response = model.generate_content([
+        prompt,
+        {"mime_type": mime, "data": file_bytes}
+    ])
+
+    if not response.candidates or not response.candidates[0].content.parts:
+        return "⚠️ AI blocked the summary due to safety."
+
+    return response.text
+
+
+
+def generate_qa(file_bytes, filename, question):
+    mime = _mime_from_filename(filename)
+
+    prompt = (
+        f"Read the attached document and answer this question based ONLY on the document:\n\n"
+        f"Question: {question}"
+    )
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    response = model.generate_content([
+        prompt,
+        {"mime_type": mime, "data": file_bytes}
+    ])
+
+    if not response.candidates or not response.candidates[0].content.parts:
+        return "⚠️ AI blocked the answer due to safety."
+
+    return response.text
+
+  
+def generate_quiz(file_bytes, filename):
+    mime = _mime_from_filename(filename)
+
+    prompt = (
+        "Read the attached document and generate 5 multiple-choice questions "
+        "(2 easy, 2 medium, 1 hard). Include answers."
+    )
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    response = model.generate_content([
+        prompt,
+        {"mime_type": mime, "data": file_bytes}
+    ])
+
+    if not response.candidates or not response.candidates[0].content.parts:
+        return "⚠️ AI blocked the quiz due to safety."
+
+    return response.text
+
+
+def generate_flashcards(file_bytes, filename):
+    mime = _mime_from_filename(filename)
+
+    prompt = (
+        "Read the attached document and generate 5 flashcards (Q & A format)."
+    )
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    response = model.generate_content([
+        prompt,
+        {"mime_type": mime, "data": file_bytes}
+    ])
+
+    if not response.candidates or not response.candidates[0].content.parts:
+        return "⚠️ AI blocked the flashcards due to safety."
+
+    return response.text
 
 @app.route("/YcloudSpark", methods=["POST"])
 def ycloud_spark_processor():
@@ -562,48 +713,52 @@ def ycloud_spark_processor():
             except Exception as e:
                 return jsonify({"error": f"Unexpected error while reading {file.filename}: {str(e)}"}), 500
 
-        # 3️⃣ Chunk the text
-        try:
-            text_chunks = chunk_text(all_text)
-            if not text_chunks:
-                return jsonify({"error": "No text extracted from the uploaded files"}), 400
-        except Exception as e:
-            return jsonify({"error": f"Error during text chunking: {str(e)}"}), 500
+        # 3️⃣ Convert all extracted text into bytes
+        full_text = all_text.strip()
+        if not full_text:
+            return jsonify({"error": "No text extracted from files"}), 400
 
-        # 4️⃣ Prepare optional inputs
+        full_bytes = full_text.encode("utf-8")
+        filename = "combined.txt"   # so mime = text/plain
+
+        # 4️⃣ Read optional inputs
         question = request.form.get("question")
         gq = request.form.get("quiz")
         flashcards = request.form.get("flashcards")
 
-        # 5️⃣ Call AI functions safely
+        # 5️⃣ Call AI functions correctly
         result = {}
+
+        # ------ Summary ------
         try:
-            result["summary"] = generate_summary(text_chunks)
+            result["summary"] = generate_summary(full_bytes, filename)
         except Exception as e:
             result["summary_error"] = f"Error generating summary: {str(e)}"
 
+        # ------ Q & A ------
         if question:
             try:
-                result["answer"] = generate_qa(text_chunks, question)
+                result["answer"] = generate_qa(full_bytes, filename, question)
             except Exception as e:
                 result["answer_error"] = f"Error generating answer: {str(e)}"
 
+        # ------ Quiz ------
         if gq and gq.lower() == "yes":
             try:
-                result["quiz"] = generate_quiz(all_text)
+                result["quiz"] = generate_quiz(full_bytes, filename)
             except Exception as e:
                 result["quiz_error"] = f"Error generating quiz: {str(e)}"
 
+        # ------ Flashcards ------
         if flashcards and flashcards.lower() == "yes":
             try:
-                result["flashcards"] = generate_flashcards(all_text)
+                result["flashcards"] = generate_flashcards(full_bytes, filename)
             except Exception as e:
                 result["flashcards_error"] = f"Error generating flashcards: {str(e)}"
 
         return jsonify(result)
 
     except Exception as e:
-        # Catch any unexpected error
         return jsonify({"error": f"Unexpected server error: {str(e)}"}), 500
 
 
@@ -612,6 +767,7 @@ def ycloud_spark_processor():
 def mindmap_generator():
     text_input = request.form.get("text")
     file = request.files.get("file")
+
     if not text_input and not file:
         return jsonify({"error": "Please provide text or upload a file"}), 400
 
@@ -620,18 +776,34 @@ def mindmap_generator():
         if error:
             return jsonify({"error": error}), 400
 
-    # The new, more detailed prompt
-    prompt = (
-        f"Analyze the following text and generate a hierarchical mindmap using Mermaid.js syntax.\n\n"
-        f"**Instructions for the mindmap:**\n"
-        f"1.  The mindmap should be clear, concise, and easy to understand every one has to understand the concept very well.\n"
-        f"2.  For each key concept or node, add a relevant Unicode emoji for visual appeal  so that everyone can understand easily (e.g., 💡 for an idea, 📊 for data).\n"
-        f"3.  For major branches or important nodes, also include a relevant icon from Font Awesome 5 using the syntax 'fa:fa-icon-name' (e.g., 'fa:fa-brain' for a central topic).\n\n"
-        f"**Text to analyze:**\n{text_input}"
-    )
-    
+    # STRICT instruction: Do NOT use emojis. Do NOT use FontAwesome.
+    prompt = f"""
+Convert the following text into a clean, readable hierarchical **Mermaid mindmap**.
+
+### RULES (IMPORTANT)
+- ONLY use valid Mermaid mindmap syntax.
+- DO NOT use emojis.
+- DO NOT use Font Awesome icons.
+- The structure must start with:
+mindmap
+  root(Your Main Topic)
+    Child
+      Sub child
+    Another child
+- Keep the text short, clean, and readable.
+- Identify the main topic automatically from the text.
+
+### Text:
+{text_input}
+"""
+
     mindmap_syntax = ask_Ycloudai(prompt)
-    return jsonify({"mindmap_code": mindmap_syntax})
+
+    # Clean result: remove markdown formatting if any
+    mindmap_clean = mindmap_syntax.replace("```mermaid", "").replace("```", "").strip()
+
+    return jsonify({"mindmap_code": mindmap_clean})
+
 
 ROLE_SKILLS = {
     "Data Scientist": [
@@ -681,7 +853,12 @@ def ats_score(resume_text: str, role: str):
     total = len(skills)
     threshold = total / 2
 
-    matched = [s for s in skills if re.search(rf"\b{s.lower()}\b", text)]
+    matched = []
+    for skill in skills:
+        skill_pattern = re.escape(skill.lower())
+        if re.search(skill_pattern, text):
+            matched.append(skill)
+
     missing = [s for s in skills if s not in matched]
     M = len(matched)
 
@@ -696,52 +873,75 @@ def ats_score(resume_text: str, role: str):
 
 def gemini_feedback(resume_text: str, role: str, matched: list, missing: list, score: float):
     prompt = f"""
-    You are an ATS Resume Analyzer.
-    Candidate applied for role: {role}.
-    
-    Resume Text:
-    {resume_text[:1500]}  # limit text for safety
-    
-    Resume Score: {score}%
-    Matched Skills: {matched}
-    Missing Skills: {missing}
-    
-    Please provide output in this format:
-    Highlights:
-    - ...
-    - ...
-    Suggestions:
-    - ...
-    - ...
-    """
+You are an expert ATS Resume Analyzer.
 
-    # CORRECTED LINE: Use the modern way to get a model.
-    # 'gemini-1.5-flash-latest' is recommended for speed and low cost.
-    model = genai.GenerativeModel('gemini-flash-latest')
+Candidate Role: {role}
 
-    # This line is already correct for the new model object.
+Resume Score: {score}%
+Matched Skills: {matched}
+Missing Skills: {missing}
+
+Resume Text (first 1500 chars):
+{resume_text[:1500]}
+
+Provide output in this structure:
+
+Highlights:
+- ...
+
+Suggestions:
+- ...
+"""
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
-    
+
     return response.text
 
-
-# In your app.py, replace the old resume_builder function with this one
 
 @app.route("/ai/resume_builder", methods=["POST"])
 def resume_builder():
     try:
+        print("\n==============================")
+        print("🟦 [TRACE] Resume Analyzer Triggered")
+        print("==============================")
+
         file = request.files.get("file")
         selected_role = request.form.get("role")
 
-        if not file or not selected_role:
-            return jsonify({"error": "Please provide a file and select a role"}), 400
+        print("🟦 [TRACE] Role selected:", selected_role)
+        print("🟦 [TRACE] File received:", file.filename if file else None)
 
+        if not file:
+            print("🟥 [ERROR] No file uploaded")
+            return jsonify({"error": "❌ No file uploaded"}), 400
+
+        if not selected_role:
+            print("🟥 [ERROR] No role selected")
+            return jsonify({"error": "❌ No role selected"}), 400
+
+        print("🟦 [TRACE] Extracting resume text...")
         text_input, error = extract_text_from_file(file)
+
         if error:
+            print("🟥 [ERROR] Extract error:", error)
             return jsonify({"error": error}), 400
 
+        if not text_input.strip():
+            print("🟥 [ERROR] Extracted text was empty")
+            return jsonify({"error": "❌ Could not read text from resume"}), 400
+
+        print("🟦 [TRACE] Running ATS score...")
         score, matched, missing = ats_score(text_input, selected_role)
+
+        print("🟩 [TRACE] ATS Score Done:", score)
+        print("🟦 [TRACE] Matched:", matched)
+        print("🟦 [TRACE] Missing:", missing)
+
+        print("🟦 [TRACE] Asking Gemini for feedback...")
         ai_feedback = gemini_feedback(text_input, selected_role, matched, missing, score)
+
+        print("🟩 [TRACE] Gemini feedback received")
 
         return jsonify({
             "resume_score": score,
@@ -751,96 +951,86 @@ def resume_builder():
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("🟥 [FATAL] EXCEPTION in resume_builder")
+        traceback.print_exc()  # 🔥 FULL TRACEBACK HERE
+        return jsonify({"error": f"🔥 Internal Error: {str(e)}"}), 500
 
-def ask_Ycloudai_audio(audio_path, prompt="Transcribe this audio file accurately and clearly.", max_tokens=2048):
-    """
-    Sends an audio file to YCloud AI (Gemini) for transcription and returns the text.
-    """
+
+def ask_Ycloudai_audio(file_bytes, mime_type):
     try:
-        model = genai.GenerativeModel('gemini-flash-latest')
+        model = genai.GenerativeModel("gemini-2.0-flash")
 
-        # Open audio file as bytes
-        with open(audio_path, "rb") as f:
-            audio_bytes = f.read()
-
-        # Send audio + prompt together
-        response = model.generate_content(
-            [prompt, {"mime_type": "audio/wav", "data": audio_bytes}],
-            generation_config={"max_output_tokens": max_tokens}
+        prompt = (
+            "Transcribe this audio clearly. "
+            "Fix mistakes and punctuation. "
+            "Do NOT summarize. "
+            "Return clean readable text."
         )
 
+        response = model.generate_content([
+            prompt,
+            {"mime_type": mime_type, "data": file_bytes}
+        ])
+
         return response.text.strip()
+
     except Exception as e:
-        print(f"YCloud AI audio transcription error: {e}")
+        print("Audio transcription error:", e)
         return None
+
 
 
 
 @app.route("/ai/voice_to_document", methods=["POST"])
 def voice_to_document():
-    if 'file' not in request.files:
-        return jsonify({"error": "Please upload an audio file"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No file selected"}), 400
-
-    format_type = request.form.get("format", "pdf")
-    temp_path_webm = None
-    temp_path_wav = None
-
-
     try:
-        # 1️⃣ Save audio temporarily
-        temp_filename_webm = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
-        temp_path_webm = os.path.join(UPLOAD_FOLDER, temp_filename_webm)
-        file.save(temp_path_webm)
+        file = request.files.get("file")
+        if not file:
+            return jsonify({"error": "Please upload an audio file"}), 400
+        
+        filename = file.filename
+        file_bytes = file.read()
 
+        # Detect mime
+        mime = _mime_from_filename(filename)
+        if mime not in ["audio/webm", "audio/wav", "audio/mpeg"]:
+            return jsonify({"error": "Unsupported audio format"}), 400
 
-        temp_filename_wav = temp_path_webm.replace('.webm','.wav')
-        temp_path_wav = os.path.join(UPLOAD_FOLDER,temp_filename_wav)
-
-        subprocess.run(['ffmpeg', '-i', temp_path_webm, temp_path_wav], check=True)
-
-        # 2️⃣ Send audio to YCloud AI for transcription
-        text_output = ask_Ycloudai_audio(temp_path_wav)
+        # Transcribe using Gemini
+        text_output = ask_Ycloudai_audio(file_bytes, mime)
         if not text_output:
             return jsonify({"error": "AI transcription failed"}), 500
 
-        # 3️⃣ Save as PDF or DOCX
-        if format_type.lower() == "pdf":
+        output_format = request.form.get("format", "pdf").lower()
+
+        # Save as PDF
+        if output_format == "pdf":
             output_file = f"{uuid.uuid4()}.pdf"
             pdf_doc = FPDF()
             pdf_doc.add_page()
             pdf_doc.set_font("Arial", size=12)
             pdf_doc.multi_cell(0, 10, text_output)
-
-            # ✅ Correct way: get PDF as bytes
             pdf_bytes = pdf_doc.output(dest="S").encode("latin1")
             saved_path = save_file_locally(pdf_bytes, output_file, subfolder="document_tools")
 
+        # Save as DOCX
         else:
             output_file = f"{uuid.uuid4()}.docx"
             doc = Document()
             doc.add_paragraph(text_output)
-            output_buffer = io.BytesIO()
-            doc.save(output_buffer)
-            output_buffer.seek(0)
-            saved_path = save_file_locally(output_buffer.getvalue(), output_file, subfolder="document_tools")
+            buffer = io.BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            saved_path = save_file_locally(buffer.getvalue(), output_file, subfolder="document_tools")
 
-        download_url = f"/download/{saved_path}"
-        return jsonify({"text": text_output, "download_url": download_url})
+        return jsonify({
+            "text": text_output,
+            "download_url": f"/download/{saved_path}"
+        })
 
     except Exception as e:
-        print(f"Voice-to-Document Error: {e}")
-        return jsonify({"error": f"Transcription failed: {str(e)}"}), 500
-
-    finally:
-        
-        if temp_path_webm and os.path.exists(temp_path_webm):
-            os.remove(temp_path_webm)
-        if temp_path_wav and os.path.exists(temp_path_wav):
-            os.remove(temp_path_wav)
+        print("Voice-to-Document Error:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 
