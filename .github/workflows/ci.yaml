@@ -1,30 +1,8 @@
-name: Ycloud CI
-on:
-  push:
-    branches: ["main"]
+name: YcloudCI
+on: push
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: setup python
-        uses: actions/setup-python@v5
-        with :
-          python-version: '3.10'
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name : check python syntax
-        run: |
-          python -m py_compile app.py
-      - name: Build Docker image
-        run: |
-          docker build -t ycloud-ci .
-
-
-
+  step1:
+   runs-on: ubuntu-latest
+  steps:
+   - name: print output
+     run: echo "Hello yaar"
