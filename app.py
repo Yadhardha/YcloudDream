@@ -32,6 +32,7 @@ from docx import Document
 import pytesseract
 from pdf2image import convert_from_bytes
 import fitz
+import sqlite3
 
 
 # ----------------------- App Setup -----------------------
@@ -361,6 +362,82 @@ def image_ocr_text(image_bytes):
         print(f"OCR error: {e}")
         return ""
 
+
+#Ycloud Notes
+
+DB_name="notes.db"
+
+def get_db():
+    return sqlite3.connect(DB_name)
+def init_db():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(""" CREATE TABLE IF NOT EXISTS notes(
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     tittle TEXT NOT NULL,
+                     content TEXT NOT NULL)
+                """)
+    conn.commit()   #Permenantly save changes
+    conn.close()    # Free up memory
+@app.route("/add-note",methods=["POST"])
+def add_note():
+    data=request.json()
+    title = data.get("title")
+    content = data.get("content")
+
+    if not title or not content:
+        return jsonify(
+            {"error":"Title and content is mandatory"}
+        )
+
+    conn = get_db()
+    curr = conn.cursor()
+    curr.execute("INSERT INTO notes (title,content) VALUES(?,?)",(title,content))
+    conn.commit()
+    conn.close()
+    return jsonify({"Message":"Hey Hi Note added successfullt"},200)
+
+
+@app.route("/get-notes",methods=["GET"])
+def get_notes():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("select id,title,content from notes ORDER BY id DESC")
+    rows = cur.fetchall()
+    conn.close()
+    notes=[]
+    for row in notes:
+        notes.append({
+
+            "id":row[0],
+            "title":row[1],
+            "content":row[2]
+        })
+
+    return jsonify(notes)
+
+@app.route("/update-note/<int:id>",methods=["PUT"])
+
+def update_note(id):
+    data = request.json
+    title = data.get("title")
+    content = data.get("content")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("UPDATE notes set title=?,content=?  where id= ?",(title,content,id))
+    conn.commit()
+    conn.close()
+    return jsonify({"Message : Note updated successfully"})
+
+
+@app.route("/delete-note<int:id>",methods=["DELETE"])
+def delete_note(id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("Delete from notes where id = ?",(id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"Message: Note deleted successfully"})
 
 # ----------------------- Document Endpoints -----------------------
 @app.route("/doc/pdf_to_word", methods=["POST"])

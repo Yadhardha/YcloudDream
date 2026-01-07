@@ -477,6 +477,20 @@ select.input:-moz-focusring {
               </div>
             </div>
             <div class="card tool-card">
+  <div class="pill">Image Tools</div>
+  <div class="flex gap-3">
+    <div style="font-size:24px;">🖼️</div>
+    <div>
+      <h4>YCloud Notes</h4>
+      <p class="muted">Store Your Notes</p>
+    </div>
+  </div>
+  <div class="mt-3">
+    <button class="btn" onclick="openYCloudNotes()">Open</button>
+  </div>
+</div>
+              
+            <div class="card tool-card">
               <div class="pill">OCR</div>
               <div class="flex gap-3">
                 <div style="font-size:24px;">🔎</div>
@@ -554,6 +568,36 @@ select.input:-moz-focusring {
   </div>
 
   <!-- Modals -->
+
+  <!-- Ycloud Notes-->
+<div id="ycloudNotesModal" class="modal">
+  <div class="modal-content">
+    <h3>📝 YCloud Notes</h3>
+
+    <button class="btn" onclick="openNoteEditor()">➕ Add Note</button>
+
+    <ul id="notesList" class="mt-3"></ul>
+
+    <button class="btn secondary" onclick="closeYCloudNotes()">Close</button>
+  </div>
+</div>
+
+<div id="noteEditorModal" class="modal">
+  <div class="modal-content">
+    <h4>Add / Edit Note</h4>
+
+    <input id="noteTitle" class="input" placeholder="Note name">
+
+    <textarea id="noteContent" class="textarea" placeholder="Write something..."></textarea>
+
+    <div class="flex gap-2 mt-3">
+      <button class="btn" onclick="saveNote()">Save</button>
+      <button class="btn secondary" onclick="closeNoteEditor()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
 
   <!-- Resize Image Modal -->
   <div id="resizeModal" class="modal-overlay hidden" role="dialog" aria-labelledby="resizeModalTitle" aria-hidden="true">
@@ -1744,6 +1788,87 @@ if (pdfBtn) {
       document.documentElement.style.setProperty('--brand', pick[0]);
       document.documentElement.style.setProperty('--brand-2', pick[1]);
     }
+
+let editingNoteId = null;
+
+// Open Notes modal
+function openYCloudNotes() {
+  document.getElementById("ycloudNotesModal").style.display = "block";
+  loadNotes();
+}
+
+function closeYCloudNotes() {
+  document.getElementById("ycloudNotesModal").style.display = "none";
+}
+
+// Open editor
+function openNoteEditor(note = null) {
+  document.getElementById("noteEditorModal").style.display = "block";
+
+  if (note) {
+    editingNoteId = note.id;
+    noteTitle.value = note.title;
+    noteContent.value = note.content;
+  } else {
+    editingNoteId = null;
+    noteTitle.value = "";
+    noteContent.value = "";
+  }
+}
+
+function closeNoteEditor() {
+  document.getElementById("noteEditorModal").style.display = "none";
+}
+
+// Save note
+async function saveNote() {
+  const data = {
+    title: noteTitle.value,
+    content: noteContent.value
+  };
+
+  const url = editingNoteId
+    ? `/update-note/${editingNoteId}`
+    : "/add-note";
+
+  const method = editingNoteId ? "PUT" : "POST";
+
+  await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  closeNoteEditor();
+  loadNotes();
+}
+
+// Delete note
+async function deleteNote(id) {
+  await fetch(`/delete-note/${id}`, { method: "DELETE" });
+  loadNotes();
+}
+
+
+async function loadNotes() {
+  const res = await fetch("/get-notes");
+  const notes = await res.json();
+
+  const list = document.getElementById("notesList");
+  list.innerHTML = "";
+
+  notes.forEach(note => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${note.title}</strong>
+      <button onclick='openNoteEditor(${JSON.stringify(note)})'>✏️</button>
+      <button onclick='deleteNote(${note.id})'>❌</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+
 
     // ---------------- Initialize Page ----------------
     function init() {
