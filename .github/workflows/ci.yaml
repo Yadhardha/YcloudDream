@@ -6,3 +6,7 @@ jobs:
   steps:
    - name: print output
      run: echo "Hello yaar"
+   - name: step2-show os
+     run: uname -a
+   - name: step3 -finish
+     run: echo "job completed without failure"
