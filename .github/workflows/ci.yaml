@@ -1,12 +1,11 @@
-name: YcloudCI
-on: push
+name : step-1
+
+on:
+  push:
+  workflow_dispatch:
+
 jobs:
-  learning-job:
+  test:
     runs-on: ubuntu-latest
     steps:
-    - name: print output
-      run: echo "Hello yaar"
-    - name: step2-show os
-      run: uname -a
-    - name: step3 -finish
-      run: echo "job completed without failure"
+      - run: echo "events running"
